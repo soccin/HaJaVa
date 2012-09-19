@@ -1,0 +1,80 @@
+##
+## MSKCC HaJaVa Pipeline Notes
+## 2012-08-22
+##
+
+
+
+BWA: (all defaults/no options set)
+----
+	Program: bwa (alignment via Burrows-Wheeler transformation)
+	Version: 0.5.9-r16
+	Contact: Heng Li <lh3@sanger.ac.uk>
+
+PICARD (MarkDuplicates):
+------------------------
+	Examines aligned records in the supplied SAM or BAM file to locate duplicate molecules. All records are then written to the output file with the duplicate records flagged.
+	Version: 1.65(1160)
+
+GATK:
+-----
+	--------------------------------------------------------------------------------
+	The Genome Analysis Toolkit (GATK) v1.6-7-g2be5704, Compiled 2012/05/25 16:27:30
+	Copyright (c) 2010 The Broad Institute
+	Please view our documentation at http://www.broadinstitute.org/gsa/wiki
+	For support, please view our support site at http://getsatisfaction.com/gsa
+	--------------------------------------------------------------------------------
+
+
+UnifiedGenotyper: 
+-----------------
+
+We do not do the VQSR in the mouse version of the pipeline
+but the work arounds when.
+
+OPTIONS: (Broken up by chromosome)
+
+$JAVA -jar $GATKDIR/GenomeAnalysisTK.jar \
+	-T UnifiedGenotyper -nt 8 -et NO_ET \
+	-R $GENOME \
+	-A DepthOfCoverage -A AlleleBalance \
+	-metrics $METRICS_FILE_SNP \
+	-stand_call_conf 50.0 \
+	-stand_emit_conf 50.0 \
+	-dcov 500 \
+	-mbq 30 \
+	-I $INPUT_BAM \
+	-o $OUTPUT_VCF_SNP \
+	-glm SNP
+
+$JAVA -jar $GATKDIR/GenomeAnalysisTK.jar \
+	-T UnifiedGenotyper -nt 8 -et NO_ET \
+	-R $GENOME \
+	-A DepthOfCoverage -A AlleleBalance \
+	-metrics $METRICS_FILE_INDEL \
+	-stand_call_conf 50.0 \
+	-stand_emit_conf 50.0 \
+	-dcov 500 \
+	-I $INPUT_BAM \
+	-o $OUTPUT_VCF_INDEL \
+	-glm INDEL
+
+$JAVA -jar $GATKDIR/GenomeAnalysisTK.jar \
+	-T VariantFiltration -et NO_ET -R $GENOME \
+	--mask $OUTPUT_VCF_INDEL --maskName nearIndel \
+	--variant $OUTPUT_VCF_SNP \
+	-o $OUTPUT_VCF_SNP_VF \
+	--clusterWindowSize 10 \
+	--filterExpression "MQ0 >= 4 && ((MQ0 / (1.0 * DP)) > 0.1)" --filterName "HARD_TO_VALIDATE" \
+	--filterExpression "SB >= -1.0" --filterName "StrandBiasFilter" \
+	--filterExpression "QUAL < 50" --filterName "QualFilter" 
+
+$JAVA -jar $GATKDIR/GenomeAnalysisTK.jar \
+	-T VariantFiltration -et NO_ET -R $GENOME \
+	--variant $OUTPUT_VCF_INDEL \
+	-o $OUTPUT_VCF_INDEL_VF \
+	--clusterWindowSize 10 \
+	--filterExpression "MQ0 >= 4 && ((MQ0 / (1.0 * DP)) > 0.1)" --filterName "HARD_TO_VALIDATE" \
+	--filterExpression "SB >= -1.0" --filterName "StrandBiasFilter" \
+	--filterExpression "QUAL < 50" --filterName "QualFilter"
+

@@ -100,6 +100,4 @@ $BWA sampe -f $OUT12 $GENOME_BWA $OUT1 $OUT2 $IN1 $IN2
 PICARD AddOrReplaceReadGroups I=$OUT12 O=${OUT12%%.sam}__RG.bam CREATE_INDEX=true SO=coordinate \
 	ID=$RGID PL=illumina LB=$LIBNAME PU=$PUNIT SM=$SAMPLENAME
 
-PICARD MarkDuplicates I=${OUT12%%.sam}__RG.bam \
-	O=${OUT12%%.sam}__RG,MD.bam M=${OUT12%%.sam}__RG,MD.txt CREATE_INDEX=true
-
+rm $OUT1 $OUT2 $OUT12

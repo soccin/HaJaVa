@@ -103,5 +103,3 @@ PICARD AddOrReplaceReadGroups I=$OUT12 O=${OUT12%%.sam}__RG.bam CREATE_INDEX=tru
 PICARD MarkDuplicates I=${OUT12%%.sam}__RG.bam \
 	O=${OUT12%%.sam}__RG,MD.bam M=${OUT12%%.sam}__RG,MD.txt CREATE_INDEX=true
 
-rm $OUT1 $OUT2 $OUT12 ${OUT12%%.sam}__RG.bam
-

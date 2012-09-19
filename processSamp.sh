@@ -6,17 +6,16 @@ SAMPLE=$2
 
 mkdir -p out
 
-MERGE1=out/${LIB}___${SAMPLE}__R1.fastq
-MERGE2=out/${LIB}___${SAMPLE}__R2.fastq
-
-rm -f $MERGE1 $MERGE2
-
 for R1 in $DROOT/Sample_$LIB/*R1*gz; do
 	R2=${R1/_R1_/_R2_}
-    zcat $R1 >>$MERGE1
-    zcat $R2 >>$MERGE2
-    echo $(basename $R1)
+	B1=$(basename $R1 | sed 's/.gz//')
+	B2=$(basename $R2 | sed 's/.gz//')
+	echo $B2, $B2
+	zcat $R1 | head -40000 >out/$B1
+	zcat $R2 | head -40000 >out/$B2
+	TAG=${B1/_R1_/__}
+	TAG=${TAG%%.*}
+	qsub -N DOMAP -pe alloc 12 /home/socci/Work/SGE/qCMD ./doMapping.sh \
+	    out/$B1 out/$B2 $SAMPLE $LIB $TAG $TAG
 done
 
-qsub -N DOMAP -pe alloc 12 /home/socci/Work/SGE/qCMD ./doMapping_Int.sh \
-	$MERGE1 $MERGE2 $SAMPLE $LIB ${LIB} ${LIB}  
