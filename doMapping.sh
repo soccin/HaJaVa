@@ -69,12 +69,13 @@ LIBNAME=$4
 PUNIT=$5
 RGID=$6
 
+ODIR=out/${LIBNAME}
 BASE1=$(basename $FASTQ1)
-BASE1=out/${BASE1%%.*}
+BASE1=$ODIR/${BASE1%%.*}
 BASE2=$(basename $FASTQ2)
-BASE2=out/${BASE2%%.*}
+BASE2=$ODIR/${BASE2%%.*}
 
-mkdir -p out
+mkdir -p $ODIR
 
 echo $BASE1, $BASE2
 
@@ -93,11 +94,11 @@ OUT2=${OUT2%%.*}.aln
 $BWA aln -t 20 $GENOME_BWA $IN1 >$OUT1
 $BWA aln -t 20 $GENOME_BWA $IN2 >$OUT2
 
-OUT12=out/${RGID}__${SAMPLENAME}.sam
+OUT12=$ODIR/${RGID}__${SAMPLENAME}.sam
 
 $BWA sampe -f $OUT12 $GENOME_BWA $OUT1 $OUT2 $IN1 $IN2
 
 PICARD AddOrReplaceReadGroups I=$OUT12 O=${OUT12%%.sam}__RG.bam CREATE_INDEX=true SO=coordinate \
 	ID=$RGID PL=illumina LB=$LIBNAME PU=$PUNIT SM=$SAMPLENAME
 
-rm $OUT1 $OUT2 $OUT12
+#rm $IN1 $IN2 $OUT1 $OUT2 $OUT12
