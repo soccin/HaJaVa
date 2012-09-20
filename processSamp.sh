@@ -16,10 +16,13 @@ for R1 in $(ls $DROOT/Sample_$LIB/*R1*gz); do
 	B1=$(basename $R1 | sed 's/.gz//')
 	B2=$(basename $R2 | sed 's/.gz//')
 	echo $B2, $B2
-	#zcat $R1 >${ODIR}/$B1
-	#zcat $R2 >${ODIR}/$B2
-	zcat $R1 | head -40000 >${ODIR}/$B1
-	zcat $R2 | head -40000 >${ODIR}/$B2
+	qsub -N ZCAT_${LIB} -pe alloc 2 $SGE/qCMD \
+	  zcat $R1 \>${ODIR}/$B1
+	qsub -N ZCAT_${LIB} -pe alloc 2 $SGE/qCMD \
+	  zcat $R2 \>${ODIR}/$B2
+    $SGE/qSYNC ZCAT_${LIB}	
+	#zcat $R1 | head -40000 >${ODIR}/$B1
+	#zcat $R2 | head -40000 >${ODIR}/$B2
 	TAG=${B1/_R1_/__}
 	TAG=${TAG%%.*}
 	qsub -N DOMAP_${LIB} -pe alloc 12 $SGE/qCMD ./doMapping.sh \

@@ -4,6 +4,6 @@
 for file in $(cat ,testData/sampleKey.txt|tr ' ' '/'); do 
 	LIB=$(dirname $file)
 	SAMP=$(basename $file)
-	./processSamp.sh $LIB $SAMP &
+	./processSamp.sh $LIB $SAMP >${LIB}___LOG.txt 2>&1 &
 done
 
