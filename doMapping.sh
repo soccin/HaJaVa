@@ -101,4 +101,4 @@ $BWA sampe -f $OUT12 $GENOME_BWA $OUT1 $OUT2 $IN1 $IN2
 PICARD AddOrReplaceReadGroups I=$OUT12 O=${OUT12%%.sam}__RG.bam CREATE_INDEX=true SO=coordinate \
 	ID=$RGID PL=illumina LB=$LIBNAME PU=$PUNIT SM=$SAMPLENAME
 
-#rm $IN1 $IN2 $OUT1 $OUT2 $OUT12
+rm $IN1 $IN2 $OUT1 $OUT2 $OUT12

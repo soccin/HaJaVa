@@ -11,11 +11,13 @@ ODIR=out/${LIB}
 
 mkdir -p ${ODIR}
 
-for R1 in $(ls $DROOT/Sample_$LIB/*R1*gz | head -10); do
+for R1 in $(ls $DROOT/Sample_$LIB/*R1*gz); do
 	R2=${R1/_R1_/_R2_}
 	B1=$(basename $R1 | sed 's/.gz//')
 	B2=$(basename $R2 | sed 's/.gz//')
 	echo $B2, $B2
+	#zcat $R1 >${ODIR}/$B1
+	#zcat $R2 >${ODIR}/$B2
 	zcat $R1 | head -40000 >${ODIR}/$B1
 	zcat $R2 | head -40000 >${ODIR}/$B2
 	TAG=${B1/_R1_/__}
@@ -32,7 +34,7 @@ qsub -pe alloc 12 -N MERGE_${LIB} $SGE/qCMD \
 $SGE/qSYNC MERGE_${LIB}
 
 qsub -pe alloc 12 -N MD_${LIB} $SGE/qCMD \
-    picard MarkDuplicates CREATE_INDEX=true \
+    picard MarkDuplicates REMOVE_DUPLICATES=true CREATE_INDEX=true \
 	I=out/${LIB}___${SAMPLE}___RG,Merge.bam \
 	O=out/${LIB}___${SAMPLE}___RG,Merge,MD.bam \
 	M=out/${LIB}___${SAMPLE}___RG,Merge,MD.txt
