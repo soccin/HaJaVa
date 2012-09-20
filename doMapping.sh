@@ -35,8 +35,12 @@ PICARDDIR=/ifs/data/bio/bin/picard-tools-1.55
 TMPDIR=/scratch/socci
 
 GENOME_DIR="/ifs/data/bio/Genomes/M.musculus/mm9"
+GENOME_TAG=mouse_mm9__FULL_hEGFR
+
+###
+# These variable must point to the genome fasta file and the BWA index
+
 GENOME_FASTQ=$GENOME_DIR/${GENOME_TAG}.fa
-GENOME_TAG=mouse_mm9__FULL
 GENOME_BWA=$GENOME_DIR/BWA/DNA/$GENOME_TAG
 
 ###
