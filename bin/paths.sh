@@ -28,7 +28,7 @@ TMPDIR=/scratch/socci
 JAVA="/opt/java/jdk1.6.0_16/bin/java -Djava.io.tmpdir="$TMPDIR
 JAVABIN=$SDIR/bin/java
 
-GATK=bin/java/GenomeAnalysisTK-1.6-7-g2be5704/GenomeAnalysisTK.jar
+GATKJAR=bin/java/GenomeAnalysisTK-1.6-7-g2be5704/GenomeAnalysisTK.jar
 BWA=/home/socci/bin/bwa
 PICARD=bin/picard
 

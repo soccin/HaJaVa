@@ -12,7 +12,7 @@ ODIR1=out
 
 mkdir -p ${ODIR}
 
-for R1 in $(ls $DROOT/Sample_$LIB/*R1*gz | head -3); do
+for R1 in $(ls $DROOT/Sample_$LIB/*R1*gz | head -2); do
 	R2=${R1/_R1_/_R2_}
 	B1=$(basename $R1 | sed 's/.gz//')
 	B2=$(basename $R2 | sed 's/.gz//')
@@ -27,8 +27,7 @@ for R1 in $(ls $DROOT/Sample_$LIB/*R1*gz | head -3); do
 		zcat $R1 | head -8000 >${ODIR}/$B1
 		zcat $R2 | head -8000 >${ODIR}/$B2
 	fi
-	TAG=${B1/_R1_/__}
-	TAG=${TAG%%.*}
+	TAG=${B1/_R1_*}
 	qsub -N qDOMAP_${LIB} -pe alloc 4 $SGE/qCMD ./doMapping.sh \
 	    ${ODIR}/$B1 ${ODIR}/$B2 $SAMPLE $LIB $TAG $TAG
 done

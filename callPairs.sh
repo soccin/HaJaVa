@@ -16,8 +16,11 @@ echo $OBASE
 
 TARGET_REGION=data/110624_MM9_exome_L2R_D02_EZ_HX1___MERGE.bed 
 
-$JAVA -jar $GATK -et NO_ET -K socci_cbio.mskcc.org.key \
-	-T RealignerTargetCreator \
+GATK="$JAVA -jar $GATKJAR -et NO_ET -K socci_cbio.mskcc.org.key "
+
+#if [ -z "DO NOT RUN" ]; then
+
+$GATK -T RealignerTargetCreator \
 	-R $GENOME_FASTQ \
 	-L $TARGET_REGION -S LENIENT \
 	-o ${OBASE}_output.intervals \
@@ -25,21 +28,39 @@ $JAVA -jar $GATK -et NO_ET -K socci_cbio.mskcc.org.key \
 
 exit
 
-
-if [ -z "DO NOT RUN" ]; then
-
 # Realign
 
-/common/sge/bin/lx24-amd64/qsub -P ngs -N kp_25042012_IR -hold_jid kp_25042012_CHR$c\_RTC -pe alloc 2 /home/mpirun/tools/qCMD /opt/java/jdk1.6.0_16/bin/java -Djava.i
-o.tmpdir=/ifs/data/mpirun/temp -jar $GATK -T IndelRealigner -et NO_ET -R /ifs/data/mpirun/genomes/mouse/mm9/kati
-e/mm9_KATIE.fasta -L chr$c -S LENIENT -targetIntervals kp_25042012_CHR$c\_output.intervals --maxReadsForRealignment 500000 --maxReadsInMemory 3000000 -o kp_25042012_CHR$c
-\_indelRealigned.bam -I s_K1567_Lung/_1/s_K1567_Lung__1_MD.bam -I s_K1567_N1/_1/s_K1567_N1__1_MD.bam -I s_K1576_Lung/_1/s_K1576_Lung__1_MD.bam -I s_K1576_N1/_1/s_K1576_N1
-__1_MD.bam -I s_K1688_Lung/_1/s_K1688_Lung__1_MD.bam -I s_K1688_N1/_1/s_K1688_N1__1_MD.bam -I s_K2031_Lung/_1/s_K2031_Lung__1_MD.bam -I s_K2031_N2/_1/s_K2031_N2__1_MD.bam
- -I s_K2348_Lung/_1/s_K2348_Lung__1_MD.bam -I s_K2348_N1/_1/s_K2348_N1__1_MD.bam
+$GATK -T IndelRealigner \
+	-R $GENOME_FASTQ \
+	-L $TARGET_REGION -S LENIENT \
+	-targetIntervals ${OBASE}_output.intervals \
+	--maxReadsForRealignment 500000 --maxReadsInMemory 3000000 \
+	-I $NORMAL -I $TUMOR \
+	-o ${OBASE}_Realign.bam
+
+#fi
 
 # CountCovariates
 
-/common/sge/bin/lx24-amd64/qsub -N KP_Sample_LID46438_46_CC -hold_jid KP_Sample_LID46438_46_MERGE3 -pe alloc 12 /home/mpirun/tools/qCMD /opt/bin/java -Xms256m -Xmx96g -XX:-UseGCOverheadLimit -Djava.io.tmpdir=/ifs/data/mpirun/temp -jar $GATK -T CountCovariates -et NO_ET -l INFO -R $GENOME_FASTQ -L /ifs/data/mpirun/analysis/solexa/varmus/Mouse_Cancer1000/target/110624_MM9_exome_L2R_D02_EZ_HX1.interval_list -S LENIENT -nt 12 -cov ReadGroupCovariate -cov QualityScoreCovariate -cov CycleCovariate -cov DinucCovariate -cov MappingQualityCovariate -cov MinimumNQSCovariate --knownSites:BED /ifs/data/mpirun/data/dbSNP/UCSC_dbSNP128_MM9.bed -recalFile KP_Sample_LID46438_46_indelRealigned.recal_data.csv -I KP_Sample_LID46438_46_indelRealigned.bam
+GATK_BIG="$JAVA -Xms256m -Xmx96g -XX:-UseGCOverheadLimit -jar $GATKJAR -et NO_ET -K socci_cbio.mskcc.org.key"
+
+$GATK_BIG -T CountCovariates -l INFO \
+	-R $GENOME_FASTQ \
+	-L $TARGET_REGION \
+	-S LENIENT -nt 12 \
+	-cov ReadGroupCovariate \
+	-cov QualityScoreCovariate \
+	-cov CycleCovariate \
+	-cov DinucCovariate \
+	-cov MappingQualityCovariate \
+	-cov MinimumNQSCovariate \
+	--knownSites:BED data/UCSC_dbSNP128_MM9__SRT.bed \
+	-I ${OBASE}_Realign.bam \
+	-recalFile ${OBASE}_recal_data.csv
+
+exit
+
+if [ -z "DO NOT RUN" ]; then
 
 # Recalibrate
 /common/sge/bin/lx24-amd64/qsub -P ngs -N kp_25042012_TR -hold_jid kp_25042012_CC_MERGE,kp_25042012_IR -pe alloc 12 /home/mpirun/tools/qCMD /opt/java/jdk1.6.0_16/bin
