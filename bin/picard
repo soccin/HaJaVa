@@ -1,0 +1,11 @@
+#!/bin/bash
+source bin/paths.sh
+
+PICARDDIR=bin/java/picard-tools-1.55
+
+JAR=$1
+shift
+
+$JAVA -Xmx32g -jar $PICARDDIR/$JAR.jar TMP_DIR=$TMPDIR \
+	VALIDATION_STRINGENCY=LENIENT $*
+
