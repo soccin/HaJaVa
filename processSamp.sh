@@ -17,7 +17,7 @@ for R1 in $(ls $DROOT/Sample_$LIB/*R1*gz); do
 	B1=$(basename $R1 | sed 's/.gz//')
 	B2=$(basename $R2 | sed 's/.gz//')
 	echo $B2, $B2
-	if [ -z "1" ]; then
+	if [ -z "" ]; then
 		qsub -N qZCAT_${LIB} -pe alloc 2 $SGE/qCMD \
 		  zcat $R1 \>${ODIR}/$B1
 		qsub -N qZCAT_${LIB} -pe alloc 2 $SGE/qCMD \
@@ -29,7 +29,7 @@ for R1 in $(ls $DROOT/Sample_$LIB/*R1*gz); do
 	fi
 	TAG=${B1/_R1_*}
 
-	qsub -N qDOMAP_${LIB} -pe alloc 4 $SGE/qCMD ./doMapping.sh \
+	qsub -N qDOMAP_${LIB} -pe alloc 6 $SGE/qCMD ./doMapping.sh \
 	    ${ODIR}/$B1 ${ODIR}/$B2 $SAMPLE $LIB $TAG $TAG
 done
 $SGE/qSYNC qDOMAP_${LIB}
