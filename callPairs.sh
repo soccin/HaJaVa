@@ -26,8 +26,6 @@ $GATK -T RealignerTargetCreator \
 	-o ${OBASE}_output.intervals \
 	-I $NORMAL -I $TUMOR
 
-exit
-
 # Realign
 
 $GATK -T IndelRealigner \
@@ -58,60 +56,62 @@ $GATK_BIG -T CountCovariates -l INFO \
 	-I ${OBASE}_Realign.bam \
 	-recalFile ${OBASE}_recal_data.csv
 
-exit
-
-if [ -z "DO NOT RUN" ]; then
 
 # Recalibrate
-/common/sge/bin/lx24-amd64/qsub -P ngs -N kp_25042012_TR -hold_jid kp_25042012_CC_MERGE,kp_25042012_IR -pe alloc 12 /home/mpirun/tools/qCMD /opt/java/jdk1.6.0_16/bin
-/java -Xms256m -Xmx96g -XX:-UseGCOverheadLimit -Djava.io.tmpdir=/ifs/data/mpirun/temp -jar $GATK -T TableRecalib
-ration -et NO_ET -l INFO -R $GENOME_FASTQ -L chr$c -S LENIENT -recalFile $sln\_$ln\_recal_data.csv -I kp_25042012_CHR$c\_indelR
-ealigned.bam -o kp_25042012_CHR$c\_indelRealigned_recal.ba
+$GATK_BIG -T TableRecalibration -l INFO \
+	-R $GENOME_FASTQ \
+	-L $TARGET_REGION -S LENIENT \
+	-recalFile ${OBASE}_recal_data.csv \
+	-I ${OBASE}_Realign.bam \
+	-o ${OBASE}_Realign,Recal.bam
 
 
-$JAVA -jar $GATKDIR/GenomeAnalysisTK.jar \
-        -T UnifiedGenotyper -nt 8 -et NO_ET \
-        -R $GENOME \
-        -A DepthOfCoverage -A AlleleBalance \
-        -metrics $METRICS_FILE_SNP \
-        -stand_call_conf 50.0 \
-        -stand_emit_conf 50.0 \
-        -dcov 500 \
-        -mbq 30 \
-        -I $INPUT_BAM \
-        -o $OUTPUT_VCF_SNP \
-        -glm SNP
+# Unified Genotyper
+$GATK -T UnifiedGenotyper -nt 12 \
+    -R $GENOME_FASTQ \
+	-L $TARGET_REGION \
+    -A DepthOfCoverage -A AlleleBalance \
+    -metrics ${OBASE}___METRICS_FILE_SNP.txt \
+    -glm SNP \
+    -stand_call_conf 50.0 \
+    -stand_emit_conf 50.0 \
+    -dcov 500 \
+    -mbq 30 \
+    -I ${OBASE}_Realign,Recal.bam \
+    -o ${OBASE}_UGT_SNP.vcf
 
-$JAVA -jar $GATKDIR/GenomeAnalysisTK.jar \
-        -T UnifiedGenotyper -nt 8 -et NO_ET \
-        -R $GENOME \
-        -A DepthOfCoverage -A AlleleBalance \
-        -metrics $METRICS_FILE_INDEL \
-        -stand_call_conf 50.0 \
-        -stand_emit_conf 50.0 \
-        -dcov 500 \
-        -I $INPUT_BAM \
-        -o $OUTPUT_VCF_INDEL \
-        -glm INDEL
 
-$JAVA -jar $GATKDIR/GenomeAnalysisTK.jar \
-        -T VariantFiltration -et NO_ET -R $GENOME \
-        --mask $OUTPUT_VCF_INDEL --maskName nearIndel \
-        --variant $OUTPUT_VCF_SNP \
-        -o $OUTPUT_VCF_SNP_VF \
-        --clusterWindowSize 10 \
-        --filterExpression "MQ0 >= 4 && ((MQ0 / (1.0 * DP)) > 0.1)" --filterName "HARD_TO_VALIDATE" \
-        --filterExpression "SB >= -1.0" --filterName "StrandBiasFilter" \
-        --filterExpression "QUAL < 50" --filterName "QualFilter" 
+$GATK -T UnifiedGenotyper -nt 12 \
+    -R $GENOME_FASTQ \
+	-L $TARGET_REGION \
+    -A DepthOfCoverage -A AlleleBalance \
+    -metrics ${OBASE}___METRICS_FILE_INDEL.txt \
+    -glm INDEL \
+    -stand_call_conf 50.0 \
+    -stand_emit_conf 50.0 \
+    -dcov 500 \
+    -I ${OBASE}_Realign,Recal.bam \
+    -o ${OBASE}_UGT_INDEL.vcf
 
-$JAVA -jar $GATKDIR/GenomeAnalysisTK.jar \
-        -T VariantFiltration -et NO_ET -R $GENOME \
-        --variant $OUTPUT_VCF_INDEL \
-        -o $OUTPUT_VCF_INDEL_VF \
-        --clusterWindowSize 10 \
-        --filterExpression "MQ0 >= 4 && ((MQ0 / (1.0 * DP)) > 0.1)" --filterName "HARD_TO_VALIDATE" \
-        --filterExpression "SB >= -1.0" --filterName "StrandBiasFilter" \
-        --filterExpression "QUAL < 50" --filterName "QualFilter"
+$GATK -T VariantFiltration \
+    -R $GENOME_FASTQ \
+	-L $TARGET_REGION \
+    --mask ${OBASE}_UGT_INDEL.vcf --maskName nearIndel \
+    --variant ${OBASE}_UGT_SNP.vcf \
+    -o ${OBASE}_UGT_SNP_VF.vcf \
+    --clusterWindowSize 10 \
+    --filterExpression 'MQ0 >= 4 && ((MQ0 / (1.0 * DP)) > 0.1)' --filterName "HARD_TO_VALIDATE" \
+    --filterExpression "SB >= -1.0" --filterName "StrandBiasFilter" \
+    --filterExpression "QUAL < 50" --filterName "QualFilter" 
 
-fi
+$GATK -T VariantFiltration \
+	-R $GENOME_FASTQ \
+	-L $TARGET_REGION \
+    --variant  ${OBASE}_UGT_INDEL.vcf \
+    -o  ${OBASE}_UGT_INDEL_VF.vcf \
+    --clusterWindowSize 10 \
+    --filterExpression 'MQ0 >= 4 && ((MQ0 / (1.0 * DP)) > 0.1)' --filterName "HARD_TO_VALIDATE" \
+    --filterExpression "SB >= -1.0" --filterName "StrandBiasFilter" \
+    --filterExpression "QUAL < 50" --filterName "QualFilter"
+
 
