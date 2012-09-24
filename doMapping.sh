@@ -61,8 +61,7 @@ OUT2=${OUT2%%.*}.aln
 $BWA aln -t 12 $GENOME_BWA $IN1 >$OUT1
 $BWA aln -t 12 $GENOME_BWA $IN2 >$OUT2
 
-TAG=$(basename $FASTQ1|sed 's/_R1_/__/'|sed 's/__clip.*//')
-OUT12=$ODIR/${TAG}__${SAMPLENAME}.sam
+OUT12=$ODIR/${SAMPLENAME}.sam
 
 $BWA sampe -f $OUT12 $GENOME_BWA $OUT1 $OUT2 $IN1 $IN2
 

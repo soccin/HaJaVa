@@ -1,13 +1,4 @@
-./processSamp.sh LID46443 K16739-T1 >LID46443.log 2>&1 &
-echo "FIRST SET SUBMITTED"
-sleep 30
-./processSamp.sh LID46442 K16739-Lung >LID46442.log 2>&1
+./processSamp.sh K16739-Lung ../,testData/LID46442___MERGE___R1.fastq.gz ../,testData/LID46442___MERGE___R2.fastq.gz
+./processSamp.sh K16739-T1 ../,testData/LID46443___MERGE___R1.fastq.gz ../,testData/LID46443___MERGE___R2.fastq.gz
 
-echo "starting hold"
-qstat
-qstat | fgrep socci | awk '{print $1}' | tr '\n' ',' | sed 's/,$//' | xargs -I % bsub -hold_jid % echo "HOLDING"
-~/Work/SGE/qSYNC echo
-qstat
-echo "hold done"
-
-./callPairs.sh out/LID46442___K16739-Lung___RG,Merge,MD,QFlt30.bam out/LID46443___K16739-T1___RG,Merge,MD,QFlt30.bam 
+./callPairs.sh out/K16739-Lung/K16739-Lung__RG,MD,QFlt30.bam out/K16739-T1/K16739-T1__RG,MD,QFlt30.bam

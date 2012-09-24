@@ -5,20 +5,17 @@ source bin/paths.sh
 NORMAL=$1
 TUMOR=$2
 
-SAMPLE_NORMAL=$(basename $NORMAL | perl -ne 'm/___(.*)___RG/;print $1')
-SAMPLE_TUMOR=$(basename $TUMOR | perl -ne 'm/___(.*)___RG/;print $1')
+SAMPLE_NORMAL=$(basename $NORMAL | perl -ne 'm/(.*)__RG/;print $1')
+SAMPLE_TUMOR=$(basename $TUMOR | perl -ne 'm/(.*)__RG/;print $1')
 OBASE=${SAMPLE_NORMAL}____${SAMPLE_TUMOR}
 
 echo $NORMAL $TUMOR
 echo $OBASE
 
-# Realign target creator
-
 TARGET_REGION=data/110624_MM9_exome_L2R_D02_EZ_HX1___MERGE.bed 
+GATK="$JAVA -jar $GATKJAR "
 
-GATK="$JAVA -jar $GATKJAR -et NO_ET -K socci_cbio.mskcc.org.key "
-
-#if [ -z "DO NOT RUN" ]; then
+# Realign target creator
 
 $GATK -T RealignerTargetCreator \
 	-R $GENOME_FASTQ \
@@ -36,11 +33,9 @@ $GATK -T IndelRealigner \
 	-I $NORMAL -I $TUMOR \
 	-o ${OBASE}_Realign.bam
 
-#fi
-
 # CountCovariates
 
-GATK_BIG="$JAVA -Xms256m -Xmx96g -XX:-UseGCOverheadLimit -jar $GATKJAR -et NO_ET -K socci_cbio.mskcc.org.key"
+GATK_BIG="$JAVA -Xms256m -Xmx96g -XX:-UseGCOverheadLimit -jar $GATKJAR "
 
 $GATK_BIG -T CountCovariates -l INFO \
 	-R $GENOME_FASTQ \
@@ -113,5 +108,3 @@ $GATK -T VariantFiltration \
     --filterExpression 'MQ0 >= 4 && ((MQ0 / (1.0 * DP)) > 0.1)' --filterName "HARD_TO_VALIDATE" \
     --filterExpression "SB >= -1.0" --filterName "StrandBiasFilter" \
     --filterExpression "QUAL < 50" --filterName "QualFilter"
-
-
