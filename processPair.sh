@@ -8,8 +8,11 @@
 #
 # Usage:
 #    ./processPair.sh \
-#		SAMPLE_NAME_NORMAL FASTQ_R1_NORMAL FASTQ_R2_NORMAL \
-#		SAMPLE_NAME_TUMOR FASTQ_R1_TUMOR FASTQ_R2_TUMOR
+#		SAMPLE_NAME_NORMAL NORMAL_R1_FASTQ.gz NORMAL_R2_FASTQ.gz  \
+#		SAMPLE_NAME_TUMOR TUMOR_R1_FASTQ.gz TUMOR_R2_FASTQ.gz
+# 
+# These scripts expect that the sequence files are compressed
+#
 
 NORMAL=$1
 NORMAL_R1=$2
