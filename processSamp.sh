@@ -22,7 +22,7 @@ $PICARD MarkDuplicates REMOVE_DUPLICATES=true CREATE_INDEX=true \
 	O=$ODIR/${SAMPLE}__RG,MD.bam \
 	M=$ODIR/${SAMPLE}__RG,MD.txt 
 
-samtools view -b -q 30 \
+$SAMTOOLS view -b -q 30 \
   $ODIR/${SAMPLE}__RG,MD.bam \
   > $ODIR/${SAMPLE}__RG,MD,QFlt30.bam
 

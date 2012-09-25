@@ -1,6 +1,8 @@
 #!/bin/bash
 
 source bin/paths.sh
+GATK="$JAVA -jar $GATKJAR "
+GATK_BIG="$JAVA -Xms256m -Xmx96g -XX:-UseGCOverheadLimit -jar $GATKJAR "
 
 NORMAL=$1
 TUMOR=$2
@@ -13,7 +15,6 @@ echo $NORMAL $TUMOR
 echo $OBASE
 
 TARGET_REGION=data/110624_MM9_exome_L2R_D02_EZ_HX1___MERGE.bed 
-GATK="$JAVA -jar $GATKJAR "
 
 # Realign target creator
 
@@ -34,8 +35,6 @@ $GATK -T IndelRealigner \
 	-o ${OBASE}_Realign.bam
 
 # CountCovariates
-
-GATK_BIG="$JAVA -Xms256m -Xmx96g -XX:-UseGCOverheadLimit -jar $GATKJAR "
 
 $GATK_BIG -T CountCovariates -l INFO \
 	-R $GENOME_FASTQ \
