@@ -12,6 +12,15 @@ Pipeline for calling variants using using the following tools
 			HaJaVa-ClipAdapter.jar
 	  Source code available on request
 
+CONFIGURATION
+-------------
+
+The file
+
+	bin/paths.sh
+
+needs to be modified to point the the various execuables, JAR files, and temp/scratch directories. More info in the comments of that file. No other edits should be necessary to run. 
+
 USAGE
 -----
 
