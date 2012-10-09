@@ -16,10 +16,16 @@ echo $FASTQ1 $FASTQ2
 echo $OUT1 $OUT2
 echo $ADAPTER
 
+#
+# The tr '#' ' ' allows the script to work with
+# both casava 1.7 and casava 1.8 fastq files
+#   casava 1.7 ==> xxxx:xxxx:xxxx#ACGTA/1
+#   casava 1.8 ==> xxxx:xxxx:xxxx 1:N:1
+#
 qsub -pe alloc 3 -N $TAG $QCMD \
-  zcat $FASTQ1 \| fastx_clipper -Q33 -z -v -n -a $ADAPTER -o ${OUT1}__TMP.fastq.gz \> ${OUT1}__CLIP.log
+  zcat $FASTQ1 \| tr '"#"' '" "' \| fastx_clipper -Q33 -z -v -n -a $ADAPTER -o ${OUT1}__TMP.fastq.gz \> ${OUT1}__CLIP.log
 qsub -pe alloc 3 -N $TAG $QCMD \
-  zcat $FASTQ2 \| fastx_clipper -Q33 -z -v -n -a $ADAPTER -o ${OUT2}__TMP.fastq.gz \> ${OUT2}__CLIP.log
+  zcat $FASTQ2 \| tr '"#"' '" "' \| fastx_clipper -Q33 -z -v -n -a $ADAPTER -o ${OUT2}__TMP.fastq.gz \> ${OUT2}__CLIP.log
 $QSYNC $TAG
 
 bin/matchPE.py ${OUT1}__TMP.fastq.gz ${OUT2}__TMP.fastq.gz ${OUT1} ${OUT2}
