@@ -14,6 +14,8 @@
 # These scripts expect that the sequence files are compressed
 #
 
+source bin/sge.sh
+
 NORMAL=$1
 NORMAL_R1=$2
 NORMAL_R2=$3
@@ -23,11 +25,15 @@ TUMOR_R1=$5
 TUMOR_R2=$6
 
 echo "##TS:PP1:" `date`
-./processSamp.sh $NORMAL $NORMAL_R1 $NORMAL_R2
+qsub -pe alloc 6 -N PROCESS_SAMP $QCMD \
+  ./processSamp.sh $NORMAL $NORMAL_R1 $NORMAL_R2
 echo "##TS:PP2:" `date`
-./processSamp.sh $TUMOR $TUMOR_R1 $TUMOR_R2
+qsub -pe alloc 6 -N PROCESS_SAMP $QCMD \
+  ./processSamp.sh $TUMOR $TUMOR_R1 $TUMOR_R2
+$QSYNC PROCESS_SAMP
 
 echo "##TS:PP3:" `date`
+exit
 ./callPairs.sh out/${NORMAL}/${NORMAL}__RG,MD,QFlt30.bam out/${TUMOR}/${TUMOR}__RG,MD,QFlt30.bam
 echo "##TS:PP4:" `date`
 

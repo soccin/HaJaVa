@@ -25,6 +25,7 @@
 #   We assume the platform is Illumina for RG
 
 source bin/paths.sh
+source bin/sge.sh
 
 ADAPTER=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
 
@@ -41,6 +42,7 @@ BASE1=$(basename $FASTQ1)
 BASE1=$ODIR/${BASE1%%.*}
 BASE2=$(basename $FASTQ2)
 BASE2=$ODIR/${BASE2%%.*}
+TAG=${SAMPLENAME}
 
 mkdir -p $ODIR
 
@@ -57,8 +59,11 @@ OUT1=${OUT1%%.*}.aln
 OUT2=${OUT2%%.*}.aln
 
 
-$BWA aln -t 12 $GENOME_BWA $IN1 >$OUT1
-$BWA aln -t 12 $GENOME_BWA $IN2 >$OUT2
+qsub -pe alloc 6 -N BWA__$TAG $QCMD \
+  $BWA aln -t 12 $GENOME_BWA $IN1 \>$OUT1
+qsub -pe alloc 6 -N BWA__$TAG $QCMD \
+  $BWA aln -t 12 $GENOME_BWA $IN2 \>$OUT2
+$QSYNC BWA__$TAG
 
 OUT12=$ODIR/${SAMPLENAME}.sam
 
