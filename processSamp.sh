@@ -10,17 +10,12 @@ ODIR1=out
 
 mkdir -p ${ODIR}
 
-echo -n "Uncompressing FASTQ's ..."
-zcat $R1 >$ODIR/R1.fastq
-zcat $R2 >$ODIR/R2.fastq
-echo " DONE"
-
-./doMapping.sh $ODIR/R1.fastq $ODIR/R2.fastq $SAMPLE $SAMPLE $SAMPLE $SAMPLE
+./doMapping.sh $R1 $R2 $SAMPLE $SAMPLE $SAMPLE $SAMPLE
 
 $PICARD MarkDuplicates REMOVE_DUPLICATES=true CREATE_INDEX=true \
 	I=$ODIR/${SAMPLE}__RG.bam \
 	O=$ODIR/${SAMPLE}__RG,MD.bam \
-	M=$ODIR/${SAMPLE}__RG,MD.txt 
+	M=$ODIR/${SAMPLE}__RG,MD.txt
 
 $SAMTOOLS view -b -q 30 \
   $ODIR/${SAMPLE}__RG,MD.bam \
