@@ -42,7 +42,7 @@ BASE1=$(basename $FASTQ1)
 BASE1=$ODIR/${BASE1%%.*}
 BASE2=$(basename $FASTQ2)
 BASE2=$ODIR/${BASE2%%.*}
-TAG=${SAMPLENAME}
+TAG=${PUNIT}
 
 mkdir -p $ODIR
 
@@ -59,13 +59,13 @@ OUT1=${OUT1%%.*}.aln
 OUT2=${OUT2%%.*}.aln
 
 
-qsub -pe alloc 6 -N BWA__$TAG $QCMD \
+qsub -pe alloc 5 -N BWA__$TAG $QCMD \
   $BWA aln -t 12 $GENOME_BWA $IN1 \>$OUT1
-qsub -pe alloc 6 -N BWA__$TAG $QCMD \
+qsub -pe alloc 5 -N BWA__$TAG $QCMD \
   $BWA aln -t 12 $GENOME_BWA $IN2 \>$OUT2
 $QSYNC BWA__$TAG
 
-OUT12=$ODIR/${SAMPLENAME}.sam
+OUT12=$ODIR/${PUNIT}.sam
 
 $BWA sampe -f $OUT12 $GENOME_BWA $OUT1 $OUT2 $IN1 $IN2
 
@@ -75,4 +75,4 @@ $PICARD AddOrReplaceReadGroups \
 	I=${OUT12%%.sam}__fPE.sam O=${OUT12%%.sam}__RG.bam CREATE_INDEX=true SO=coordinate \
 	ID=$RGID PL=illumina LB=$LIBNAME PU=$PUNIT SM=$SAMPLENAME
 
-rm $IN1 $IN2 $OUT1 $OUT2 $OUT12 ${OUT12%%.sam}__fPE.sam
+#rm $IN1 $IN2 $OUT1 $OUT2 $OUT12 ${OUT12%%.sam}__fPE.sam
