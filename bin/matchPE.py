@@ -4,7 +4,7 @@ import sys
 import gzip
 
 def fastqStream(fname):
-    with gzip.open(fname) as fp:
+    with open(fname) as fp:
         out=[]
         for line in fp:
             out.append(line.strip())
@@ -12,49 +12,45 @@ def fastqStream(fname):
                 yield out
                 out=[]
 
-def getID(x):
-    return x[0].split(" ")[0]
-
-def flip(x):
-    return (x+1) % 2
-
-fastq=[
-    fastqStream(sys.argv[1]),
-    fastqStream(sys.argv[2])
-]
+def getID(x,splitChar):
+    return x[0].split(splitChar)[0]
 
 outFP=[
-    gzip.open(sys.argv[3],"w"),
-    gzip.open(sys.argv[4],"w")
+    open(sys.argv[3],"w"),
+    open(sys.argv[4],"w")
 ]
 
-cache=[[],[]]
-index=[{},{}]
+cache={}
 
-i=0
-while 1:
-    try:
-        seq=fastq[i].next()
-    except StopIteration:
-        break
-    if getID(seq) in index[flip(i)]:
-        for k in xrange(len(cache[flip(i)])):
-            del index[flip(i)][getID(cache[flip(i)][k])]
-            if getID(seq)==getID(cache[flip(i)][k]):
-                if i==0:
-                    print >>outFP[0], "\n".join(seq)
-                    print >>outFP[1], "\n".join(cache[flip(i)][k])
-                else:
-                    print >>outFP[0], "\n".join(cache[flip(i)][k])
-                    print >>outFP[1], "\n".join(seq)
-                break
+print >>sys.stderr, "Caching Reads1 ...",
 
-        cache[flip(i)]=cache[flip(i)][(k+1):]
-        cache[i]=[]
-        index[i]={}
-    else:
-        cache[i].append(seq)
-        index[i][getID(seq)]=len(cache[i])
-    i=flip(i)
+read1Stream=fastqStream(sys.argv[1])
+rec=read1Stream.next()
+print rec
+if rec[0].find(" ")>-1:
+    print "CASAVA 1.8"
+    idSplit=" "
+elif rec[0].find("/")>-1:
+    print "CASAVA 1.7"
+    idSplit="/"
+else:
+    print >>sys.stderr, "Unknown Hiseq format"
+    print >>sys.stderr, "\n".join(rec)
 
-[x.close() for x in outFP]
+cache[getID(rec,idSplit)]
+
+for rec in read1Stream:
+    cache[getID(rec,idSplit)]=rec
+
+print >>sys.stderr, "done caching ... Pairing ...",
+
+for rec in fastqStream(sys.argv[2]):
+    if getID(rec,idSplit) in cache:
+        print >>outFP[0], "\n".join(cache[getID(rec,idSplit)])
+        print >>outFP[1], "\n".join(rec)
+
+print >>sys.stderr, "Finished"
+
+outFP[0].close()
+outFP[1].close()
+

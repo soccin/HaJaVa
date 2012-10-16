@@ -23,14 +23,14 @@ echo $ADAPTER
 #   casava 1.8 ==> xxxx:xxxx:xxxx 1:N:1
 #
 qsub -pe alloc 2 -N $TAG $QCMD \
-  zcat $FASTQ1 \| tr '"#"' '" "' \| fastx_clipper -Q33 -z -v -n -a $ADAPTER -o ${OUT1}__TMP.fastq.gz \> ${OUT1}__CLIP.log
+  zcat $FASTQ1 \| fastx_clipper -Q33 -v -n -a $ADAPTER -o ${OUT1}__TMP.fastq \> ${OUT1}__CLIP.log
 qsub -pe alloc 2 -N $TAG $QCMD \
-  zcat $FASTQ2 \| tr '"#"' '" "' \| fastx_clipper -Q33 -z -v -n -a $ADAPTER -o ${OUT2}__TMP.fastq.gz \> ${OUT2}__CLIP.log
+  zcat $FASTQ2 \| fastx_clipper -Q33 -v -n -a $ADAPTER -o ${OUT2}__TMP.fastq \> ${OUT2}__CLIP.log
 $QSYNC $TAG
 echo "Done with clipping...rePairing..."
-bin/matchPE.py ${OUT1}__TMP.fastq.gz ${OUT2}__TMP.fastq.gz ${OUT1} ${OUT2}
+bin/matchPE.py ${OUT1}__TMP.fastq ${OUT2}__TMP.fastq ${OUT1} ${OUT2}
 
-zcat ${OUT1} | egrep "^@" | awk '{print $1}' | md5sum >${OUT1}.MD5 &
-zcat ${OUT2} | egrep "^@" | awk '{print $1}' | md5sum >${OUT2}.MD5 &
+cat ${OUT1} | egrep "^@HWI-ST" | awk '{print $1}' | md5sum >${OUT1}.MD5 &
+cat ${OUT2} | egrep "^@HWI-ST" | awk '{print $1}' | md5sum >${OUT2}.MD5 &
 
-rm ${OUT1}__TMP.fastq.gz ${OUT2}__TMP.fastq.gz
+#rm ${OUT1}__TMP.fastq ${OUT2}__TMP.fastq
