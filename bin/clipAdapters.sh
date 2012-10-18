@@ -30,7 +30,7 @@ $QSYNC $TAG
 echo "Done with clipping...rePairing..."
 bin/matchPE.py ${OUT1}__TMP.fastq ${OUT2}__TMP.fastq ${OUT1} ${OUT2}
 
-cat ${OUT1} | egrep "^@HWI-ST" | awk '{print $1}' | md5sum >${OUT1}.MD5 &
-cat ${OUT2} | egrep "^@HWI-ST" | awk '{print $1}' | md5sum >${OUT2}.MD5 &
+cat ${OUT1} | egrep "^@HWI-ST" | awk -F" |#" '{print $1}' | md5sum >${OUT1}.MD5 &
+cat ${OUT2} | egrep "^@HWI-ST" | awk -F" |#" '{print $1}' | md5sum >${OUT2}.MD5 &
 
-#rm ${OUT1}__TMP.fastq ${OUT2}__TMP.fastq
+rm ${OUT1}__TMP.fastq ${OUT2}__TMP.fastq
