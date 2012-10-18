@@ -26,18 +26,18 @@ print >>sys.stderr, "Caching Reads1 ...",
 
 read1Stream=fastqStream(sys.argv[1])
 rec=read1Stream.next()
-print rec
+
 if rec[0].find(" ")>-1:
     print "CASAVA 1.8"
     idSplit=" "
-elif rec[0].find("/")>-1:
+elif rec[0].find("#")>-1:
     print "CASAVA 1.7"
-    idSplit="/"
+    idSplit="#"
 else:
     print >>sys.stderr, "Unknown Hiseq format"
     print >>sys.stderr, "\n".join(rec)
 
-cache[getID(rec,idSplit)]
+cache[getID(rec,idSplit)]=rec
 
 for rec in read1Stream:
     cache[getID(rec,idSplit)]=rec
