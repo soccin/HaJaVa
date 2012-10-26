@@ -1,6 +1,8 @@
 #!/bin/bash
 
 source bin/paths.sh
+source bin/dataPaths.sh
+
 GATK="$JAVA -jar $GATKJAR "
 GATK_BIG="$JAVA -Xms256m -Xmx96g -XX:-UseGCOverheadLimit -jar $GATKJAR "
 
@@ -14,7 +16,7 @@ OBASE=${SAMPLE_NORMAL}____${SAMPLE_TUMOR}
 echo $NORMAL $TUMOR
 echo $OBASE
 
-TARGET_REGION=data/110624_MM9_exome_L2R_D02_EZ_HX1___MERGE.bed 
+TARGET_REGION=data/110624_MM9_exome_L2R_D02_EZ_HX1___MERGE.bed
 
 # Realign target creator
 
@@ -96,7 +98,7 @@ $GATK -T VariantFiltration \
     --clusterWindowSize 10 \
     --filterExpression 'MQ0 >= 4 && ((MQ0 / (1.0 * DP)) > 0.1)' --filterName "HARD_TO_VALIDATE" \
     --filterExpression "SB >= -1.0" --filterName "StrandBiasFilter" \
-    --filterExpression "QUAL < 50" --filterName "QualFilter" 
+    --filterExpression "QUAL < 50" --filterName "QualFilter"
 
 $GATK -T VariantFiltration \
 	-R $GENOME_FASTQ \

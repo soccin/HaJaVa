@@ -1,6 +1,8 @@
 #!/bin/bash
 
 source bin/paths.sh
+source bin/dataPaths.sh
+
 GATK="$JAVA -jar $GATKJAR "
 GATK_BIG="$JAVA -Xms256m -Xmx96g -XX:-UseGCOverheadLimit -jar $GATKJAR "
 

@@ -1,6 +1,7 @@
 #!/bin/bash
 
 source bin/paths.sh
+source bin/dataPaths.sh
 source bin/sge.sh
 
 SAMPLE=$1

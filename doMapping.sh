@@ -25,6 +25,7 @@
 #   We assume the platform is Illumina for RG
 
 source bin/paths.sh
+source bin/dataPaths.sh
 source bin/sge.sh
 
 ADAPTER=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
