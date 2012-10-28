@@ -9,12 +9,13 @@ GATK_BIG="$JAVA -Xms256m -Xmx96g -XX:-UseGCOverheadLimit -jar $GATKJAR "
 NORMAL=$1
 TUMOR=$2
 
-SAMPLE_NORMAL=$(basename $NORMAL | perl -ne 'm/(.*)___/;print $1')
-SAMPLE_TUMOR=$(basename $TUMOR | perl -ne 'm/(.*)___/;print $1')
+SAMPLE_NORMAL=$(echo $NORMAL | perl -ne 'm|out/(.*?)/|;print $1')
+SAMPLE_TUMOR=$(echo $TUMOR | perl -ne 'm|out/(.*?)/|;print $1')
+
 OBASE=${SAMPLE_NORMAL}____${SAMPLE_TUMOR}
 
-echo $NORMAL $TUMOR
-echo $OBASE
+echo "NORMAL, TUMOR=" $NORMAL, $TUMOR
+echo "OBASE=" $OBASE
 
 TARGET_REGION=data/110624_MM9_exome_L2R_D02_EZ_HX1___MERGE.bed
 

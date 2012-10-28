@@ -28,7 +28,7 @@ source bin/paths.sh
 source data/dataPaths.sh
 source bin/sge.sh
 
-ADAPTER=AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
+source data/params.sh
 
 FASTQ1=$1
 FASTQ2=$2
@@ -52,7 +52,7 @@ echo $BASE1, $BASE2
 OUT1=${BASE1}__clip.fastq
 OUT2=${BASE2}__clip.fastq
 
-bin/clipAdapters.sh $FASTQ1 $FASTQ2 $OUT1 $OUT2 $ADAPTER
+bin/clipAdapters.sh $FASTQ1 $FASTQ2 $OUT1 $OUT2 $ADAPTER_1 $ADAPTER_2
 
 IN1=$OUT1
 IN2=$OUT2

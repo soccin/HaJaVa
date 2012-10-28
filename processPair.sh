@@ -31,9 +31,9 @@ echo "##TS:PP2:" `date`
 qsub -pe alloc 6 -N PROCESS_SAMP $QCMD \
   ./processSamp.sh $TUMOR $TUMOR_R1 $TUMOR_R2
 $QSYNC PROCESS_SAMP
+exit
 
 echo "##TS:PP3:" `date`
-exit
 ./callPairs.sh out/${NORMAL}/${NORMAL}__RG,MD,QFlt30.bam out/${TUMOR}/${TUMOR}__RG,MD,QFlt30.bam
 echo "##TS:PP4:" `date`
 
