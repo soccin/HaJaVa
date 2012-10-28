@@ -18,7 +18,7 @@ CONFIGURATION
 The files
 
 	bin/paths.sh
-	bin/dataPaths.sh
+	data/dataPaths.sh
 
 
 needs to be modified to point the the various execuables, JAR files, and temp/scratch directories. More info in the comments of that file. No other edits should be necessary to run.
