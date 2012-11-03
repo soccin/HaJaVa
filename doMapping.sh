@@ -74,6 +74,6 @@ cat $OUT12 | bin/filterProperPair.py >${OUT12%%.sam}__fPE.sam
 
 $PICARD AddOrReplaceReadGroups \
 	I=${OUT12%%.sam}__fPE.sam O=${OUT12%%.sam}__RG.bam CREATE_INDEX=true SO=coordinate \
-	ID=$RGID PL=illumina LB=$LIBNAME PU=$PUNIT SM=$SAMPLENAME
+	ID=$RGID PL=illumina LB=$LIBNAME PU=$LIBNAME SM=$SAMPLENAME
 
-#rm $IN1 $IN2 $OUT1 $OUT2 $OUT12 ${OUT12%%.sam}__fPE.sam
+rm $IN1 $IN2 $OUT1 $OUT2 $OUT12 ${OUT12%%.sam}__fPE.sam
