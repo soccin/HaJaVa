@@ -3,6 +3,8 @@
 source bin/sge.sh
 
 SAMPLE=$1
+SAMPLE=$(echo $SAMPLE | sed 's/\/$//' | pyp 's[-1]')
+echo $SAMPLE
 
 BADCLIPPAIRS=$(find out/$SAMPLE/*.MD5 | xargs cat | sort  | uniq -c | awk '$1!=2{print $0}')
 
@@ -14,10 +16,10 @@ fi
 
 INPUTBAMS=$(find out/$SAMPLE/*QFlt30.bam | awk '{print "I="$1}')
 
-qsub -pe alloc 4 -N pic.MERGE__${SAMPLE} $QCMD \
-  picard MergeSamFiles O=${SAMPLE}___MERGE.bam SO=coordinate CREATE_INDEX=true $INPUTBAMS
+qsub -pe alloc 5 -N pic.MERGE__${SAMPLE} $QCMD \
+  picard MergeSamFiles O=out/${SAMPLE}___MERGE.bam SO=coordinate CREATE_INDEX=true $INPUTBAMS
 $QSYNC pic.MERGE__${SAMPLE}
 
-qsub -pe alloc 4 -N pic.MD__${SAMPLE} $QCMD \
-  picard MarkDuplicates I=${SAMPLE}___MERGE.bam CREATE_INDEX=true REMOVE_DUPLICATES=true \
-  O=${SAMPLE}___MERGE,MD.bam M=${SAMPLE}___MERGE,MD.txt
+qsub -pe alloc 5 -N pic.MD__${SAMPLE} $QCMD \
+  picard MarkDuplicates I=out/${SAMPLE}___MERGE.bam CREATE_INDEX=true REMOVE_DUPLICATES=true \
+  O=out/${SAMPLE}___MERGE,MD.bam M=out/${SAMPLE}___MERGE,MD.txt
