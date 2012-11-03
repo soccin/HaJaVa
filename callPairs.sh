@@ -9,8 +9,8 @@ GATK_BIG="$JAVA -Xms256m -Xmx96g -XX:-UseGCOverheadLimit -jar $GATKJAR "
 NORMAL=$1
 TUMOR=$2
 
-SAMPLE_NORMAL=$(echo $NORMAL | perl -ne 'm|out/(.*?)/|;print $1')
-SAMPLE_TUMOR=$(echo $TUMOR | perl -ne 'm|out/(.*?)/|;print $1')
+SAMPLE_NORMAL=$(echo $NORMAL | perl -ne 'm|out/(.*?)___MERGE|;print $1')
+SAMPLE_TUMOR=$(echo $TUMOR | perl -ne 'm|out/(.*?)___MERGE|;print $1')
 
 OBASE=${SAMPLE_NORMAL}____${SAMPLE_TUMOR}
 
