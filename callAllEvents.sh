@@ -11,21 +11,30 @@ OBASE=$(basename $BAM | sed 's/_Realign.*//')
 echo $OBASE
 
 TARGET_REGION=data/110624_MM9_exome_L2R_D02_EZ_HX1___MERGE.bed
-MBQ=17
-CALLC=30
 
 # Unified Genotyper
+
+##
+# GATK PARAMETERS
+#
+MBQ=17
+DCOV=500
+STAND_CALL_CONF=30
+STAND_EMIT_CONF=30
+
+SBASE=${OBASE}___MBQ_${MBQ}__CCONF_${STAND_CALL_CONF}
+
 $GATK -T UnifiedGenotyper -nt 12 \
     -R $GENOME_FASTQ \
 	-L $TARGET_REGION \
     -A DepthOfCoverage -A AlleleBalance \
-    -metrics ${OBASE}___METRICS_FILE_SNP.txt \
+    -metrics ${SBASE}___METRICS_FILE_SNP.txt \
     -glm SNP \
-    -stand_call_conf $CALLC \
-    -stand_emit_conf $CALLC \
-    -dcov 500 \
+    -stand_call_conf $STAND_CALL_CONF \
+    -stand_emit_conf $STAND_EMIT_CONF \
+    -dcov $DCOV \
     -mbq $MBQ \
-    -I $BAM \
+    -I ${OBASE}_Realign,Recal.bam \
     --output_mode EMIT_ALL_SITES \
-	-o ${OBASE}_UGT_SNP__${MBQ},${CALLC}.vcf
+	-o ${SBASE}_UGT_SNP_EMITAll.vcf
 

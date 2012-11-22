@@ -11,44 +11,29 @@ OBASE=$(basename $BAM | sed 's/_Realign.*//')
 echo $OBASE
 
 TARGET_REGION=data/110624_MM9_exome_L2R_D02_EZ_HX1___MERGE.bed
-MBQ=17
-CALLC=30
 
 # Unified Genotyper
+
+##
+# GATK PARAMETERS
+#
+MBQ=17
+DCOV=500
+STAND_CALL_CONF=30
+STAND_EMIT_CONF=30
+
+SBASE=${OBASE}___MBQ_${MBQ}__CCONF_${STAND_CALL_CONF}
+
 $GATK -T UnifiedGenotyper -nt 12 \
     -R $GENOME_FASTQ \
 	-L $TARGET_REGION \
     -A DepthOfCoverage -A AlleleBalance \
-    -metrics ${OBASE}___METRICS_FILE_SNP.txt \
+    -metrics ${SBASE}___METRICS_FILE_SNP.txt \
     -glm SNP \
-    -stand_call_conf $CALLC \
-    -stand_emit_conf $CALLC \
-    -dcov 500 \
+    -stand_call_conf $STAND_CALL_CONF \
+    -stand_emit_conf $STAND_EMIT_CONF \
+    -dcov $DCOV \
     -mbq $MBQ \
-    -I $BAM \
-    -o ${OBASE}_UGT_SNP__${MBQ},${CALLC}.vcf
-
-
-$GATK -T UnifiedGenotyper -nt 12 \
-    -R $GENOME_FASTQ \
-	-L $TARGET_REGION \
-    -A DepthOfCoverage -A AlleleBalance \
-    -metrics ${OBASE}___METRICS_FILE_INDEL.txt \
-    -glm INDEL \
-    -stand_call_conf $CALLC \
-    -stand_emit_conf $CALLC \
-    -dcov 500 \
-    -I $BAM \
-    -o ${OBASE}_UGT_INDEL.vcf
-
-$GATK -T VariantFiltration \
-    -R $GENOME_FASTQ \
-	-L $TARGET_REGION \
-    --mask ${OBASE}_UGT_INDEL.vcf --maskName nearIndel \
-    --variant ${OBASE}_UGT_SNP__${MBQ},${CALLC}.vcf \
-    -o ${OBASE}_UGT_SNP__VF__${MBQ},${CALLC}.vcf \
-    --clusterWindowSize 10 \
-    --filterExpression 'MQ0 >= 4 && ((MQ0 / (1.0 * DP)) > 0.1)' --filterName "HARD_TO_VALIDATE" \
-    --filterExpression "SB >= -1.0" --filterName "StrandBiasFilter" \
-    --filterExpression "QUAL < 50" --filterName "QualFilter"
+    -I ${OBASE}_Realign,Recal.bam \
+    -o ${SBASE}_UGT_SNP.vcf
 
