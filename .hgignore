@@ -1,0 +1,8 @@
+syntax: glob
+*~
+,test*
+out*/*
+.HISTORY
+._*
+,results
+DM*
