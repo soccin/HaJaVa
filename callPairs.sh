@@ -6,10 +6,13 @@ TUMOR=$2
 SAMPLE_NORMAL=$(echo $NORMAL | perl -ne 'm[out/(.*?)(___MERGE|/)];print $1')
 SAMPLE_TUMOR=$(echo $TUMOR | perl -ne 'm[out/(.*?)(___MERGE|/)];print $1')
 OBASE=${SAMPLE_NORMAL}____${SAMPLE_TUMOR}
+mkdir -p $OBASE
+
 echo "NORMAL, TUMOR=" $NORMAL, $TUMOR
 echo "OBASE=" $OBASE
 
 source bin/paths.sh
+source bin/sge.sh
 source data/dataPaths.sh
 
 GATK="$JAVA -jar $GATKJAR "
@@ -18,30 +21,45 @@ GATK_BIG="$JAVA -Xms256m -Xmx96g -XX:-UseGCOverheadLimit -jar $GATKJAR "
 TARGET_REGION=data/110624_MM9_exome_L2R_D02_EZ_HX1___MERGE_SRTChr.bed
 KNOWN_SNPS=data/UCSC_dbSNP128_MM9__SRTChr.bed.gz
 
+CHROMS=$(samtools view -H $NORMAL | fgrep '@SQ' | awk '{print $2}' | sed 's/SN://' | egrep -v "(_)")
+
 # Realign target creator
 
-$GATK -T RealignerTargetCreator \
+QTAG=q_RTC_${OBASE}
+for CHROM in $CHROMS; do
+  qsub -pe alloc 4 -N $QTAG $QCMD \
+    $GATK -T RealignerTargetCreator \
 	-R $GENOME_FASTQ \
-	-L $TARGET_REGION -S LENIENT \
-	-o ${OBASE}_output.intervals \
+	-L $CHROM -S LENIENT \
+	-o ${OBASE}/${CHROM}___output.intervals \
 	-I $NORMAL -I $TUMOR
+done
+$QSYNC $QTAG
 
 # Realign
 
-$GATK -T IndelRealigner \
+QTAG=q_IR_${OBASE}
+for CHROM in $CHROMS; do
+  qsub -pe alloc 4 -N $QTAG $QCMD \
+    $GATK -T IndelRealigner \
 	-R $GENOME_FASTQ \
-	-L $TARGET_REGION -S LENIENT \
-	-targetIntervals ${OBASE}_output.intervals \
+	-L $CHROM -S LENIENT \
+	-targetIntervals ${OBASE}/${CHROM}___output.intervals \
 	--maxReadsForRealignment 500000 --maxReadsInMemory 3000000 \
 	-I $NORMAL -I $TUMOR \
-	-o ${OBASE}_Realign.bam
+	-o ${OBASE}/${CHROM}___Realign.bam
+done
+$QSYNC $QTAG
 
 # CountCovariates
 
+INPUTS=$(ls ${OBASE}/*___Realign.bam | awk '{print "-I "$1}')
+QTAG=q_CCOV_${OBASE}
+qsub -pe alloc 9 -N $QTAG $QCMD \
 $GATK_BIG -T CountCovariates -l INFO \
 	-R $GENOME_FASTQ \
 	-L $TARGET_REGION \
-	-S LENIENT -nt 12 \
+	-S LENIENT -nt 20 \
 	-cov ReadGroupCovariate \
 	-cov QualityScoreCovariate \
 	-cov CycleCovariate \
@@ -49,17 +67,26 @@ $GATK_BIG -T CountCovariates -l INFO \
 	-cov MappingQualityCovariate \
 	-cov MinimumNQSCovariate \
 	--knownSites:BED $KNOWN_SNPS \
-	-I ${OBASE}_Realign.bam \
-	-recalFile ${OBASE}_recal_data.csv
+	-I $INPUTS \
+	-recalFile ${OBASE}/_recal_data.csv
+$QSYNC $QTAG
 
 # Recalibrate
-$GATK_BIG -T TableRecalibration -l INFO \
-	-R $GENOME_FASTQ \
-	-L $TARGET_REGION -S LENIENT \
-	-recalFile ${OBASE}_recal_data.csv \
-	-I ${OBASE}_Realign.bam \
-	-o ${OBASE}_Realign,Recal.bam
-
+QTAG=q_TR_${OBASE}
+for BAM in ${OBASE}/*___Realign.bam; do
+    CHROM=$(echo $BAM | sed 's/.*chr/chr/' | sed 's/___.*//')
+    fgrep -w $CHROM $TARGET_REGION >${OBASE}/${CHROM}__TARGET.bed
+    qsub -pe alloc 5 -N $QTAG $QCMD \
+        $GATK_BIG -T TableRecalibration -l INFO \
+        	-R $GENOME_FASTQ \
+        	-L ${OBASE}/${CHROM}__TARGET.bed \
+            -S LENIENT \
+        	-recalFile ${OBASE}/_recal_data.csv \
+        	-I ${BAM} \
+        	-o ${BAM%.bam},Recal.bam
+done
+$QSYNC $QTAG
+exit
 
 # Unified Genotyper
 
