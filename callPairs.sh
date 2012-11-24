@@ -16,7 +16,7 @@ GATK="$JAVA -jar $GATKJAR "
 GATK_BIG="$JAVA -Xms256m -Xmx96g -XX:-UseGCOverheadLimit -jar $GATKJAR "
 
 TARGET_REGION=data/110624_MM9_exome_L2R_D02_EZ_HX1___MERGE_SRTChr.bed
-KNOWN_SNPS=data/UCSC_dbSNP128_MM9__SRTChr.bed
+KNOWN_SNPS=data/UCSC_dbSNP128_MM9__SRTChr.bed.gz
 
 # Realign target creator
 
@@ -48,10 +48,9 @@ $GATK_BIG -T CountCovariates -l INFO \
 	-cov DinucCovariate \
 	-cov MappingQualityCovariate \
 	-cov MinimumNQSCovariate \
-	--knownSites:BED KNOWN_SNPS \
+	--knownSites:BED $KNOWN_SNPS \
 	-I ${OBASE}_Realign.bam \
 	-recalFile ${OBASE}_recal_data.csv
-
 
 # Recalibrate
 $GATK_BIG -T TableRecalibration -l INFO \
