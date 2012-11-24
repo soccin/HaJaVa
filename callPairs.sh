@@ -86,6 +86,13 @@ $GATK -T UnifiedGenotyper -nt 12 \
     -I ${OBASE}_Realign,Recal.bam \
     -o ${SBASE}_UGT_SNP.vcf
 
+#
+# Fix .bai for pysam
+ln -s ${OBASE}_Realign,Recal.bai ${OBASE}_Realign,Recal.bam.bai
+
+bin/annoteVCF.py ${SBASE}_UGT_SNP.vcf ${OBASE}_Realign,Recal.bam $MBQ >${SBASE}_UGT_SNP_AnnoteQDP.vcf
+./bin/getSomaticEvents.py ${SBASE}_UGT_SNP_AnnoteQDP.vcf $SAMPLE_NORMAL $SAMPLE_TUMOR >${SBASE}_UGT_SNP___EVT.txt
+exit
 
 $GATK -T UnifiedGenotyper -nt 12 \
     -R $GENOME_FASTQ \
