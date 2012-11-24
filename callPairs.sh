@@ -1,23 +1,22 @@
 #!/bin/bash
 
+NORMAL=$1
+TUMOR=$2
+
+SAMPLE_NORMAL=$(echo $NORMAL | perl -ne 'm[out/(.*?)(___MERGE|/)];print $1')
+SAMPLE_TUMOR=$(echo $TUMOR | perl -ne 'm[out/(.*?)(___MERGE|/)];print $1')
+OBASE=${SAMPLE_NORMAL}____${SAMPLE_TUMOR}
+echo "NORMAL, TUMOR=" $NORMAL, $TUMOR
+echo "OBASE=" $OBASE
+
 source bin/paths.sh
 source data/dataPaths.sh
 
 GATK="$JAVA -jar $GATKJAR "
 GATK_BIG="$JAVA -Xms256m -Xmx96g -XX:-UseGCOverheadLimit -jar $GATKJAR "
 
-NORMAL=$1
-TUMOR=$2
-
-SAMPLE_NORMAL=$(echo $NORMAL | perl -ne 'm[out/(.*?)(___MERGE|/)];print $1')
-SAMPLE_TUMOR=$(echo $TUMOR | perl -ne 'm[out/(.*?)(___MERGE|/)];print $1')
-
-OBASE=${SAMPLE_NORMAL}____${SAMPLE_TUMOR}
-
-echo "NORMAL, TUMOR=" $NORMAL, $TUMOR
-echo "OBASE=" $OBASE
-
-TARGET_REGION=data/110624_MM9_exome_L2R_D02_EZ_HX1___MERGE.bed
+TARGET_REGION=data/110624_MM9_exome_L2R_D02_EZ_HX1___MERGE_SRTChr.bed
+KNOWN_SNPS=data/UCSC_dbSNP128_MM9__SRTChr.bed
 
 # Realign target creator
 
@@ -49,7 +48,7 @@ $GATK_BIG -T CountCovariates -l INFO \
 	-cov DinucCovariate \
 	-cov MappingQualityCovariate \
 	-cov MinimumNQSCovariate \
-	--knownSites:BED data/UCSC_dbSNP128_MM9__SRT.bed \
+	--knownSites:BED KNOWN_SNPS \
 	-I ${OBASE}_Realign.bam \
 	-recalFile ${OBASE}_recal_data.csv
 
