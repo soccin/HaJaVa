@@ -7,10 +7,8 @@ Pipeline for calling variants using using the following tools
 	* picard [picard-tools-1.55]
 	* samtools [0.1.18 (r982:295)]
 	* GATK [GenomeAnalysisTK-1.6-7-g2be5704]
-
-	* Custom scripts from A. Bhutkar included in bundle
-			HaJaVa-ClipAdapter.jar
-	  Source code available on request
+	* pysam [pysam.__version__ == '0.6']
+    * pyvcf [???]
 
 CONFIGURATION
 -------------
@@ -45,6 +43,4 @@ There is a sample dataset included in a separate TAR file. The script
 
 will run a test with this test data. Simple edit the DATADIR variable at the top to
 point to the test dataset.
-
-
 
