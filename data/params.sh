@@ -7,7 +7,7 @@
 ##
 
 
-ADAPTER_SET=MIT_782
+ADAPTER_SET=TrueSeqFull
 
 case $ADAPTER_SET in
 
