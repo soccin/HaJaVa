@@ -86,7 +86,6 @@ for BAM in ${OBASE}/*___Realign.bam; do
         	-o ${BAM%.bam},Recal.bam
 done
 $QSYNC $QTAG
-exit
 
 # Unified Genotyper
 
@@ -99,8 +98,11 @@ STAND_CALL_CONF=30
 STAND_EMIT_CONF=30
 
 SBASE=${OBASE}___MBQ_${MBQ}__CCONF_${STAND_CALL_CONF}
+INPUTS=$(ls ${OBASE}/*___Realign,Recal.bam | awk '{print "-I "$1}')
 
-$GATK -T UnifiedGenotyper -nt 12 \
+QTAG=q_UGT_SNP_${OBASE}
+qsub -pe alloc 9 -N $QTAG $QCMD \
+$GATK -T UnifiedGenotyper -nt 20 \
     -R $GENOME_FASTQ \
 	-L $TARGET_REGION \
     -A DepthOfCoverage -A AlleleBalance \
@@ -110,8 +112,16 @@ $GATK -T UnifiedGenotyper -nt 12 \
     -stand_emit_conf $STAND_EMIT_CONF \
     -dcov $DCOV \
     -mbq $MBQ \
-    -I ${OBASE}_Realign,Recal.bam \
+    $INPUTS \
     -o ${SBASE}_UGT_SNP.vcf
+
+# Need to merge for annoteVCF.py
+
+BAMS=$(ls ${OBASE}/*Realign,Recal.bam | awk '{print "I="$1}')
+qsub -pe alloc 6 -N $QTAG $QCMD \
+picard MergeSamFiles CREATE_INDEX=true SO=coordinate O=${OBASE}_Realign,Recal.bam $BAMS
+
+$QSYNC $QTAG
 
 #
 # Fix .bai for pysam
