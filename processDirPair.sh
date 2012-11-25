@@ -5,8 +5,6 @@ NORMALDIR=$2
 TUMOR=$3
 TUMORDIR=$4
 
-source bin/paths.sh
-source data/dataPaths.sh
 source bin/sge.sh
 
 SAMP=$NORMAL
@@ -21,7 +19,7 @@ function processDir {
 
     for R1 in $DIR/*R1*gz; do
         R2=${R1/_R1_/_R2_}
-        echo \
+        ##echo \
         qsub -N $TAG $QCMD \
         ./processSamp.sh $SAMP $R1 $R2
     done
@@ -34,5 +32,12 @@ $QSYNC $TAG
 
 # MERGE
 
+qsub -N $TAG $QCMD \
+./mergeSplitBAMs.sh $NORMAL
+qsub -N $TAG $QCMD \
+./mergeSplitBAMs.sh $TUMOR
+$QSYNC $TAG
+
 # CALL
+./callPairs.sh out/${NORMAL}___MERGE,MD.bam out/${TUMOR}___MERGE,MD.bam
 
