@@ -46,15 +46,24 @@ echo "...Merge done"
 #
 # For some reason BAM is not showing up before next job starts
 #
-MD5=$(md5sum out/${NORMAL}___MERGE,MD.bam)
-echo "MD5.0=" $MD5
-while [ -z "$MD5" ]; do
-    sleep 30
-    MD5=$(md5sum out/${NORMAL}___MERGE,MD.bam)
-    echo "MD5.n=" $MD5
-done
+function checkFile {
+	FILE=$1
+	MD5=$(md5sum $FILE)
+	echo "MD5.0=" $FILE ";" $MD5
+	while [ -z "$MD5" ]; do
+    	sleep 30
+    	MD5=$(md5sum $FILE)
+    	echo "MD5.n=" $FILE ";" $MD5
+	done
+}
+
+checkFile out/${NORMAL}___MERGE,MD.bam
+checkFile out/${TUMOR}___MERGE,MD.bam
 
 # CALL
+echo "Pause"
+sleep 300
+echo "Cont"
 
 echo "CALL"
 ./callPairs.sh out/${NORMAL}___MERGE,MD.bam out/${TUMOR}___MERGE,MD.bam

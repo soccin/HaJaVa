@@ -3,6 +3,21 @@
 NORMAL=$1
 TUMOR=$2
 
+function checkFile {
+    FILE=$1
+    MD5=$(md5sum $FILE)
+    echo "MD5.0=" $FILE ";" $MD5
+    while [ -z "$MD5" ]; do
+        sleep 30
+        MD5=$(md5sum $FILE)
+        echo "MD5.n=" $FILE ";" $MD5
+    done
+}
+
+checkFile $NORMAL
+checkFile $TUMOR
+echo "FILES CHECKED"
+
 SAMPLE_NORMAL=$(echo $NORMAL | perl -ne 'm[out/(.*?)(___MERGE|/)];print $1')
 SAMPLE_TUMOR=$(echo $TUMOR | perl -ne 'm[out/(.*?)(___MERGE|/)];print $1')
 OBASE=${SAMPLE_NORMAL}____${SAMPLE_TUMOR}
@@ -177,3 +192,4 @@ $GATK -T VariantFiltration \
     --filterExpression 'MQ0 >= 4 && ((MQ0 / (1.0 * DP)) > 0.1)' --filterName "HARD_TO_VALIDATE" \
     --filterExpression "SB >= -1.0" --filterName "StrandBiasFilter" \
     --filterExpression "QUAL < $STAND_CALL_CONF" --filterName "QualFilter"
+
