@@ -29,15 +29,33 @@ function processDir {
 processDir $NORMAL $NORMALDIR
 processDir $TUMOR $TUMORDIR
 $QSYNC $TAG
+sleep 30
 
 # MERGE
 
-qsub -N $TAG $QCMD \
+echo "MERGE..."
+qsub -N ${TAG}_2 $QCMD \
 ./mergeSplitBAMs.sh $NORMAL
-qsub -N $TAG $QCMD \
+qsub -N ${TAG}_2 $QCMD \
 ./mergeSplitBAMs.sh $TUMOR
-$QSYNC $TAG
+$QSYNC ${TAG}_2
+sleep 30
+
+echo "...Merge done"
+
+#
+# For some reason BAM is not showing up before next job starts
+#
+MD5=$(md5sum out/${NORMAL}___MERGE,MD.bam)
+echo "MD5.0=" $MD5
+while [ -z "$MD5" ]; do
+    sleep 30
+    MD5=$(md5sum out/${NORMAL}___MERGE,MD.bam)
+    echo "MD5.n=" $MD5
+done
 
 # CALL
+
+echo "CALL"
 ./callPairs.sh out/${NORMAL}___MERGE,MD.bam out/${TUMOR}___MERGE,MD.bam
 

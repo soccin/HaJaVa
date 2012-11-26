@@ -8,6 +8,8 @@ SAMPLE_TUMOR=$(echo $TUMOR | perl -ne 'm[out/(.*?)(___MERGE|/)];print $1')
 OBASE=${SAMPLE_NORMAL}____${SAMPLE_TUMOR}
 mkdir -p $OBASE
 
+echo "------------------------------------------------------------------"
+echo "callPairs"
 echo "NORMAL, TUMOR=" $NORMAL, $TUMOR
 echo "OBASE=" $OBASE
 
@@ -22,10 +24,16 @@ TARGET_REGION=data/110624_MM9_exome_L2R_D02_EZ_HX1___MERGE_SRTChr.bed
 KNOWN_SNPS=data/UCSC_dbSNP128_MM9__SRTChr.bed.gz
 
 CHROMS=$(samtools view -H $NORMAL | fgrep '@SQ' | awk '{print $2}' | sed 's/SN://' | egrep -v "(_)")
+echo "CHROMS=" $CHROMS
+if [ -z "$CHROMS" ]; then
+	echo "CHROMS<if>=" $CHROMS
+	exit
+fi
 
 # Realign target creator
 
 QTAG=q_RTC_${OBASE}
+
 for CHROM in $CHROMS; do
   qsub -pe alloc 4 -N $QTAG $QCMD \
     $GATK -T RealignerTargetCreator \
@@ -39,6 +47,9 @@ $QSYNC $QTAG
 # Realign
 
 QTAG=q_IR_${OBASE}
+echo
+echo $QTAG
+echo
 for CHROM in $CHROMS; do
   qsub -pe alloc 4 -N $QTAG $QCMD \
     $GATK -T IndelRealigner \
@@ -55,6 +66,9 @@ $QSYNC $QTAG
 
 INPUTS=$(ls ${OBASE}/*___Realign.bam | awk '{print "-I "$1}')
 QTAG=q_CCOV_${OBASE}
+echo
+echo $QTAG
+echo
 qsub -pe alloc 9 -N $QTAG $QCMD \
 $GATK_BIG -T CountCovariates -l INFO \
 	-R $GENOME_FASTQ \
