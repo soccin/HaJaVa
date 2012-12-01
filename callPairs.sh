@@ -3,19 +3,11 @@
 NORMAL=$1
 TUMOR=$2
 
-function checkFile {
-    FILE=$1
-    MD5=$(md5sum $FILE)
-    echo "MD5.0=" $FILE ";" $MD5
-    while [ -z "$MD5" ]; do
-        sleep 30
-        MD5=$(md5sum $FILE)
-        echo "MD5.n=" $FILE ";" $MD5
-    done
-}
-
+source bin/funcs.sh
 checkFile $NORMAL
 checkFile $TUMOR
+checkFile ${NORMAL%%.bam}.bai
+checkFile ${TUMOR%%.bam}.bai
 echo "FILES CHECKED"
 
 SAMPLE_NORMAL=$(echo $NORMAL | perl -ne 'm[out/(.*?)(___MERGE|/)];print $1')
