@@ -17,8 +17,20 @@ function processDir {
     SAMP=$1
     DIR=$2
 
+NUM=0
+
     for R1 in $DIR/*R1*gz; do
-        R2=${R1/_R1_/_R2_}
+	
+NUM=$(( $NUM + 1 ))
+echo $NUM, $file
+STATUS=$(./throttle.py $NUM)
+
+if [ -n "$STATUS" ]; then
+echo "HOLD"
+sleep 1200
+fi	
+
+		R2=${R1/_R1_/_R2_}
         ##echo \
         qsub -N $TAG $QCMD \
         ./processSamp.sh $SAMP $R1 $R2
