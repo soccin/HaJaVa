@@ -14,6 +14,10 @@ GDIR=/ifs/data/bio/Genomes/M.musculus/mm9
 #GENOME_BWA=$GDIR/BWA/DNA/mouse_mm9__All.fa
 
 #hMYC MOUSE
-GENOME_FASTQ=$GDIR/mouse_mm9__All_hMYC.fa
-GENOME_BWA=$GDIR/BWA/DNA/mouse_mm9__All_hMYC.fa
+#GENOME_FASTQ=$GDIR/mouse_mm9__All_hMYC.fa
+#GENOME_BWA=$GDIR/BWA/DNA/mouse_mm9__All_hMYC.fa
+
+#hEGFR MOUSE
+GENOME_FASTQ=$GDIR/mouse_mm9__All_hEGFR.fa
+GENOME_BWA=$GDIR/BWA/DNA/mouse_mm9__All_hEGFR.fa
 
