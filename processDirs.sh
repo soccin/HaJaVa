@@ -7,20 +7,23 @@ function processDir {
     SAMP=$1
     DIR=$2
 
-	NUM=$(./num8nodes.sh)
+    NUM=$(./num8nodes.sh)
     echo "NUM=" $NUM
 
     for R1 in $DIR/*R1*gz; do
 
-		echo $NUM, $file
+        echo $NUM, $file
         while [ $NUM -lt 1 ]; do
             echo "Sleeping ..."
-            sleep 10
+            ./sgeUtilization.sh
+            sleep `./sgeUtilization.sh`
             NUM=$(./num8nodes.sh)
             echo $NUM
         done
 
-		R2=${R1/_R1_/_R2_}
+        ./sgeUtilization.sh
+
+        R2=${R1/_R1_/_R2_}
         #echo \
         qsub -N $TAG $QCMD \
         ./processSamp.sh $SAMP $R1 $R2
