@@ -11,12 +11,13 @@ function processDir {
     echo "NUM=" $NUM
 
     for R1 in $DIR/*R1*gz; do
-
+		DELAY=$(cat SGE_DELAY)
+		echo "DELAY="$DELAY
         echo $NUM, $file
         while [ $NUM -lt 1 ]; do
             echo "Sleeping ..."
             ./sgeUtilization.sh
-            sleep `./sgeUtilization.sh`
+			sleep `./sgeUtilization.sh`
             NUM=$(./num8nodes.sh)
             echo $NUM
         done
@@ -29,6 +30,7 @@ function processDir {
         ./processSamp.sh $SAMP $R1 $R2
 
         NUM=$(( $NUM - 1 ))
+		sleep $DELAY
 
     done
 
