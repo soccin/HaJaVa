@@ -18,12 +18,6 @@ echo $OUT1 $OUT2
 echo $ADAPTER_1
 echo $ADAPTER_2
 
-#
-# The tr '#' ' ' allows the script to work with
-# both casava 1.7 and casava 1.8 fastq files
-#   casava 1.7 ==> xxxx:xxxx:xxxx#ACGTA/1
-#   casava 1.8 ==> xxxx:xxxx:xxxx 1:N:1
-#
 qsub -pe alloc 2 -N $TAG $QCMD \
   zcat $FASTQ1 \| fastx_clipper -Q33 -v -n -a $ADAPTER_1 -o ${OUT1}__TMP.fastq \> ${OUT1}__CLIP.log
 qsub -pe alloc 2 -N $TAG $QCMD \
