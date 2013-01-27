@@ -59,7 +59,6 @@ IN2=$OUT2
 OUT1=${OUT1%%.*}.aln
 OUT2=${OUT2%%.*}.aln
 
-
 qsub -pe alloc 5 -N BWA__$TAG $QCMD \
   $BWA aln -t 12 $GENOME_BWA $IN1 \>$OUT1
 qsub -pe alloc 5 -N BWA__$TAG $QCMD \
@@ -68,11 +67,14 @@ $QSYNC BWA__$TAG
 
 OUT12=$ODIR/${PUNIT}.sam
 
+echo "Starting sampe ..."
 $BWA sampe -f $OUT12 $GENOME_BWA $OUT1 $OUT2 $IN1 $IN2
+echo "Done with sampe"
+echo
 
 cat $OUT12 | bin/filterProperPair.py >${OUT12%%.sam}__fPE.sam
 
-$PICARD AddOrReplaceReadGroups \
+$PICARD AddOrReplaceReadGroups MAX_RECORDS_IN_RAM=20000000 \
 	I=${OUT12%%.sam}__fPE.sam O=${OUT12%%.sam}__RG.bam CREATE_INDEX=true SO=coordinate \
 	ID=$RGID PL=illumina LB=$LIBNAME PU=$LIBNAME SM=$SAMPLENAME
 
