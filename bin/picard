@@ -4,6 +4,6 @@ source bin/paths.sh
 JAR=$1
 shift
 
-$JAVA -Xmx32g -jar $PICARDDIR/$JAR.jar TMP_DIR=$TMPDIR \
+$JAVA -Xmx48g -Djava.io.tmpdir=$TMPDIR -jar $PICARDDIR/$JAR.jar TMP_DIR=$TMPDIR \
 	VALIDATION_STRINGENCY=LENIENT $*
 
