@@ -13,11 +13,11 @@ TAG=$(basename ${R1} | sed 's/.fast.*//')
 
 mkdir -p ${ODIR}
 
-qsub -pe alloc 10 -N MAP_${TAG} $QCMD \
+qsub -pe alloc 11 -N MAP_${TAG} $QCMD \
     ./doMapping.sh $R1 $R2 $SAMPLE $SAMPLE $TAG $SAMPLE
 $QSYNC MAP_${TAG}
 
-qsub -pe alloc 3 -N MD_${TAG} $QCMD \
+qsub -pe alloc 6 -N MD_${TAG} $QCMD \
     $PICARD MarkDuplicates REMOVE_DUPLICATES=true CREATE_INDEX=true \
 	I=$ODIR/${TAG}__RG.bam \
 	O=$ODIR/${TAG}__RG,MD.bam \
@@ -30,6 +30,6 @@ qsub -pe alloc 3 -N FLT_${TAG} $QCMD \
     \> $ODIR/${TAG}__RG,MD,QFlt30.bam
 $QSYNC FLT_${TAG}
 
-qsub -pe alloc 3 -N RG_${TAG} $QCMD \
+qsub -pe alloc 6 -N RG_${TAG} $QCMD \
     $PICARD BuildBamIndex I=$ODIR/${TAG}__RG,MD,QFlt30.bam
 $QSYNC RG_${TAG}
