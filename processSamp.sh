@@ -13,7 +13,7 @@ TAG=$(basename ${R1} | sed 's/.fast.*//')
 
 mkdir -p ${ODIR}
 
-qsub -pe alloc 11 -N MAP_${TAG} $QCMD \
+qsub -pe alloc 3 -N MAP_${TAG} $QCMD \
     ./doMapping.sh $R1 $R2 $SAMPLE $SAMPLE $TAG $SAMPLE
 $QSYNC MAP_${TAG}
 
