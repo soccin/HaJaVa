@@ -1,6 +1,7 @@
 #!/bin/bash
 
 source bin/sge.sh
+source bin/paths.sh
 
 SAMPLE=$1
 SAMPLE=$(echo $SAMPLE | sed 's/\/$//' | pyp 's[-1]')
@@ -16,10 +17,10 @@ fi
 
 INPUTBAMS=$(find out/$SAMPLE/*QFlt30.bam | awk '{print "I="$1}')
 
-qsub -pe alloc 5 -N pic.MERGE__${SAMPLE} $QCMD \
-  picard MergeSamFiles O=out/${SAMPLE}___MERGE.bam SO=coordinate CREATE_INDEX=true $INPUTBAMS
+qsub -pe alloc 6 -N pic.MERGE__${SAMPLE} $QCMD \
+  $PICARD MergeSamFiles O=out/${SAMPLE}___MERGE.bam SO=coordinate CREATE_INDEX=true $INPUTBAMS
 $QSYNC pic.MERGE__${SAMPLE}
 
-qsub -pe alloc 5 -N pic.MD__${SAMPLE} $QCMD \
-  picard MarkDuplicates I=out/${SAMPLE}___MERGE.bam CREATE_INDEX=true REMOVE_DUPLICATES=true \
+qsub -pe alloc 6 -N pic.MD__${SAMPLE} $QCMD \
+  $PICARD MarkDuplicates I=out/${SAMPLE}___MERGE.bam CREATE_INDEX=true REMOVE_DUPLICATES=true \
   O=out/${SAMPLE}___MERGE,MD.bam M=out/${SAMPLE}___MERGE,MD.txt
