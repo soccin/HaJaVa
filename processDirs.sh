@@ -26,7 +26,7 @@ function processDir {
 
         R2=${R1/_R1_/_R2_}
         #echo \
-        qsub -N $TAG $QCMD \
+        #qsub -N $TAG $QCMD \
         ./processSamp.sh $SAMP $R1 $R2
 
         NUM=$(( $NUM - 1 ))

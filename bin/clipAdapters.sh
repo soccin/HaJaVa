@@ -18,11 +18,11 @@ echo $OUT1 $OUT2
 echo $ADAPTER_1
 echo $ADAPTER_2
 
-qsub -pe alloc 2 -N $TAG $QCMD \
-  zcat $FASTQ1 \| fastx_clipper -Q33 -v -n -a $ADAPTER_1 -o ${OUT1}__TMP.fastq \> ${OUT1}__CLIP.log
-qsub -pe alloc 2 -N $TAG $QCMD \
-  zcat $FASTQ2 \| fastx_clipper -Q33 -v -n -a $ADAPTER_2 -o ${OUT2}__TMP.fastq \> ${OUT2}__CLIP.log
-$QSYNC $TAG
+#qsub -pe alloc 2 -N $TAG $QCMD \
+  zcat $FASTQ1 | fastx_clipper -Q33 -v -n -a $ADAPTER_1 -o ${OUT1}__TMP.fastq > ${OUT1}__CLIP.log
+#qsub -pe alloc 2 -N $TAG $QCMD \
+  zcat $FASTQ2 | fastx_clipper -Q33 -v -n -a $ADAPTER_2 -o ${OUT2}__TMP.fastq > ${OUT2}__CLIP.log
+#QSYNC $TAG
 echo "Done with clipping...rePairing..."
 bin/matchPE.py ${OUT1}__TMP.fastq ${OUT2}__TMP.fastq ${OUT1} ${OUT2}
 

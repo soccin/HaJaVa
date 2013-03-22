@@ -59,11 +59,11 @@ IN2=$OUT2
 OUT1=${OUT1%%.*}.aln
 OUT2=${OUT2%%.*}.aln
 
-qsub -pe alloc 5 -N BWA__$TAG $QCMD \
-  $BWA aln -t 12 $GENOME_BWA $IN1 \>$OUT1
-qsub -pe alloc 5 -N BWA__$TAG $QCMD \
-  $BWA aln -t 12 $GENOME_BWA $IN2 \>$OUT2
-$QSYNC BWA__$TAG
+#qsub -pe alloc 5 -N BWA__$TAG $QCMD \
+  $BWA aln -t 12 $GENOME_BWA $IN1 >$OUT1
+#qsub -pe alloc 5 -N BWA__$TAG $QCMD \
+  $BWA aln -t 12 $GENOME_BWA $IN2 >$OUT2
+#QSYNC BWA__$TAG
 
 OUT12=$ODIR/${PUNIT}.sam
 

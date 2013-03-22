@@ -1,16 +1,3 @@
 #!/bin/bash
-
-DATADIR=../test/SeqData
-echo "##TS::" `date`
-./processPair.sh \
-	K16739-Lung $DATADIR/LID46442___MERGE___R1.fastq.gz $DATADIR/LID46442___MERGE___R2.fastq.gz \
-	K16739-T1 $DATADIR/LID46443___MERGE___R1.fastq.gz $DATADIR/LID46443___MERGE___R2.fastq.gz
-
-echo "##TS::" `date`
-
-./callPairs.sh \
-	out/K16739-Lung/LID46442___MERGE___R1__RG,MD,QFlt30.bam \
-	out/K16739-T1/LID46443___MERGE___R1__RG,MD,QFlt30.bam
-
-echo "##TS::" `date`
+./processDirPair.sh DM808NT ../TestData/DM1001_DM808NT_1 DM808T3 ../TestData/DM1002_DM808T3_3
 

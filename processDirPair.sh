@@ -32,7 +32,7 @@ fi
 
 		R2=${R1/_R1_/_R2_}
         ##echo \
-        qsub -N $TAG $QCMD \
+        #qsub -N $TAG $QCMD \
         ./processSamp.sh $SAMP $R1 $R2
     done
 
@@ -40,17 +40,16 @@ fi
 
 processDir $NORMAL $NORMALDIR
 processDir $TUMOR $TUMORDIR
-$QSYNC $TAG
-sleep 30
+#QSYNC $TAG
 
 # MERGE
 
 echo "MERGE..."
-qsub -N ${TAG}_2 $QCMD \
+#qsub -N ${TAG}_2 $QCMD \
 ./mergeSplitBAMs.sh $NORMAL
-qsub -N ${TAG}_2 $QCMD \
+#qsub -N ${TAG}_2 $QCMD \
 ./mergeSplitBAMs.sh $TUMOR
-$QSYNC ${TAG}_2
+#QSYNC ${TAG}_2
 
 echo "...Merge done"
 

@@ -42,14 +42,14 @@ fi
 QTAG=q_RTC_${OBASE}
 
 for CHROM in $CHROMS; do
-  qsub -pe alloc 4 -N $QTAG $QCMD \
+  #qsub -pe alloc 4 -N $QTAG $QCMD \
     $GATK -T RealignerTargetCreator \
 	-R $GENOME_FASTQ \
 	-L $CHROM -S LENIENT \
 	-o ${OBASE}/${CHROM}___output.intervals \
 	-I $NORMAL -I $TUMOR
 done
-$QSYNC $QTAG
+#QSYNC $QTAG
 
 # Realign
 
@@ -58,7 +58,7 @@ echo
 echo $QTAG
 echo
 for CHROM in $CHROMS; do
-  qsub -pe alloc 4 -N $QTAG $QCMD \
+  #qsub -pe alloc 4 -N $QTAG $QCMD \
     $GATK -T IndelRealigner \
 	-R $GENOME_FASTQ \
 	-L $CHROM -S LENIENT \
@@ -67,7 +67,7 @@ for CHROM in $CHROMS; do
 	-I $NORMAL -I $TUMOR \
 	-o ${OBASE}/${CHROM}___Realign.bam
 done
-$QSYNC $QTAG
+#QSYNC $QTAG
 
 # CountCovariates
 
@@ -76,7 +76,7 @@ QTAG=q_CCOV_${OBASE}
 echo
 echo $QTAG
 echo
-qsub -pe alloc 9 -N $QTAG $QCMD \
+#qsub -pe alloc 9 -N $QTAG $QCMD \
 $GATK_BIG -T CountCovariates -l INFO \
 	-R $GENOME_FASTQ \
 	-L $TARGET_REGION \
@@ -90,14 +90,14 @@ $GATK_BIG -T CountCovariates -l INFO \
 	--knownSites:BED $KNOWN_SNPS \
 	-I $INPUTS \
 	-recalFile ${OBASE}/_recal_data.csv
-$QSYNC $QTAG
+#QSYNC $QTAG
 
 # Recalibrate
 QTAG=q_TR_${OBASE}
 for BAM in ${OBASE}/*___Realign.bam; do
     CHROM=$(echo $BAM | sed 's/.*chr/chr/' | sed 's/___.*//')
     fgrep -w $CHROM $TARGET_REGION >${OBASE}/${CHROM}__TARGET.bed
-    qsub -pe alloc 5 -N $QTAG $QCMD \
+    #qsub -pe alloc 5 -N $QTAG $QCMD \
         $GATK_BIG -T TableRecalibration -l INFO \
         	-R $GENOME_FASTQ \
         	-L ${OBASE}/${CHROM}__TARGET.bed \
@@ -106,7 +106,7 @@ for BAM in ${OBASE}/*___Realign.bam; do
         	-I ${BAM} \
         	-o ${BAM%.bam},Recal.bam
 done
-$QSYNC $QTAG
+#QSYNC $QTAG
 
 # Unified Genotyper
 
@@ -122,7 +122,7 @@ SBASE=${OBASE}___MBQ_${MBQ}__CCONF_${STAND_CALL_CONF}
 INPUTS=$(ls ${OBASE}/*___Realign,Recal.bam | awk '{print "-I "$1}')
 
 QTAG=q_UGT_SNP_${OBASE}
-qsub -pe alloc 9 -N $QTAG $QCMD \
+#qsub -pe alloc 9 -N $QTAG $QCMD \
 $GATK -T UnifiedGenotyper -nt 20 \
     -R $GENOME_FASTQ \
 	-L $TARGET_REGION \
@@ -139,10 +139,10 @@ $GATK -T UnifiedGenotyper -nt 20 \
 # Need to merge for annoteVCF.py
 
 BAMS=$(ls ${OBASE}/*Realign,Recal.bam | awk '{print "I="$1}')
-qsub -pe alloc 6 -N $QTAG $QCMD \
+#qsub -pe alloc 6 -N $QTAG $QCMD \
 picard MergeSamFiles CREATE_INDEX=true SO=coordinate O=${OBASE}_Realign,Recal.bam $BAMS
 
-$QSYNC $QTAG
+#QSYNC $QTAG
 
 #
 # Fix .bai for pysam
