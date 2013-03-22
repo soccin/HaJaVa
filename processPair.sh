@@ -25,12 +25,12 @@ TUMOR_R1=$5
 TUMOR_R2=$6
 
 echo "##TS:PP1:" `date`
-qsub -pe alloc 6 -N PROCESS_SAMP $QCMD \
+#qsub -pe alloc 6 -N PROCESS_SAMP $QCMD \
   ./processSamp.sh $NORMAL $NORMAL_R1 $NORMAL_R2
 echo "##TS:PP2:" `date`
-qsub -pe alloc 6 -N PROCESS_SAMP $QCMD \
+#qsub -pe alloc 6 -N PROCESS_SAMP $QCMD \
   ./processSamp.sh $TUMOR $TUMOR_R1 $TUMOR_R2
-$QSYNC PROCESS_SAMP
+#QSYNC PROCESS_SAMP
 exit
 
 echo "##TS:PP3:" `date`
