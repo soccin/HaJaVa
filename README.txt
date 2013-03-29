@@ -8,7 +8,7 @@ Pipeline for calling variants using using the following tools
 	* samtools [0.1.18 (r982:295)]
 	* GATK [GenomeAnalysisTK-1.6-7-g2be5704]
 	* pysam [pysam.__version__ == '0.6']
-    * pyvcf [???]
+    * pyvcf ['0.4.3']
 
 CONFIGURATION
 -------------
@@ -41,6 +41,5 @@ There is a sample dataset included in a separate TAR file. The script
 
 	runTest.sh
 
-will run a test with this test data. Simple edit the DATADIR variable at the top to
-point to the test dataset.
+will run a test with this test data. Simple edit the DATADIR variable at the top to point to the test dataset.
 
