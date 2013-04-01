@@ -1,7 +1,8 @@
 #!/bin/bash
+SDIR="$( cd "$( dirname "$0" )" && pwd )" 
 
 #
-# This script does all the processing that can be done on a single sample
+# This script does all the processing that can be done on a single fastq file
 #
 #   Clip
 #   BWA (aln, sampe)
@@ -24,11 +25,10 @@
 #
 #   We assume the platform is Illumina for RG
 
-source bin/paths.sh
-source data/dataPaths.sh
-source bin/sge.sh
-
-source data/params.sh
+source $SDIR/bin/paths.sh
+source $SDIR/bin/defs.sh
+source $SDIR/data/dataPaths.sh
+source $SDIR/data/params.sh
 
 FASTQ1=$1
 FASTQ2=$2
@@ -52,18 +52,15 @@ echo $BASE1, $BASE2
 OUT1=${BASE1}__clip.fastq
 OUT2=${BASE2}__clip.fastq
 
-bin/clipAdapters.sh $FASTQ1 $FASTQ2 $OUT1 $OUT2 $ADAPTER_1 $ADAPTER_2
+$SDIR/bin/clipAdapters.sh $FASTQ1 $FASTQ2 $OUT1 $OUT2 $ADAPTER_1 $ADAPTER_2
 
 IN1=$OUT1
 IN2=$OUT2
 OUT1=${OUT1%%.*}.aln
 OUT2=${OUT2%%.*}.aln
 
-#qsub -pe alloc 5 -N BWA__$TAG $QCMD \
-  $BWA aln -t 12 $GENOME_BWA $IN1 >$OUT1
-#qsub -pe alloc 5 -N BWA__$TAG $QCMD \
-  $BWA aln -t 12 $GENOME_BWA $IN2 >$OUT2
-#QSYNC BWA__$TAG
+$BWA aln -t 8 $GENOME_BWA $IN1 >$OUT1
+$BWA aln -t 8 $GENOME_BWA $IN2 >$OUT2
 
 OUT12=$ODIR/${PUNIT}.sam
 
@@ -72,7 +69,7 @@ $BWA sampe -f $OUT12 $GENOME_BWA $OUT1 $OUT2 $IN1 $IN2
 echo "Done with sampe"
 echo
 
-cat $OUT12 | bin/filterProperPair.py >${OUT12%%.sam}__fPE.sam
+cat $OUT12 | $SDIR/bin/filterProperPair.py >${OUT12%%.sam}__fPE.sam
 
 $PICARD AddOrReplaceReadGroups MAX_RECORDS_IN_RAM=20000000 \
 	I=${OUT12%%.sam}__fPE.sam O=${OUT12%%.sam}__RG.bam CREATE_INDEX=true SO=coordinate \
