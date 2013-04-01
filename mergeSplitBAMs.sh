@@ -1,7 +1,7 @@
 #!/bin/bash
 
-source bin/sge.sh
 source bin/paths.sh
+source bin/defs.sh
 
 SAMPLE=$1
 SAMPLE=$(echo $SAMPLE | sed 's/\/$//' | pyp 's[-1]')

@@ -1,9 +1,12 @@
 #!/bin/bash
-source bin/paths.sh
+SDIR="$( cd "$( dirname "$0" )" && pwd )" 
 
+source $SDIR/paths.sh
 JAR=$1
 shift
 
-$JAVA -Xmx48g -Djava.io.tmpdir=$TMPDIR -jar $PICARDDIR/$JAR.jar TMP_DIR=$TMPDIR \
+echo "IN $0, JAVA=$JAVA"
+
+$JAVA -jar $PICARDDIR/$JAR.jar TMP_DIR=$TMPDIR \
 	VALIDATION_STRINGENCY=LENIENT $*
 
