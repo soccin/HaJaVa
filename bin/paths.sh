@@ -31,7 +31,6 @@ SAMTOOLS=$HJV_ROOT/bin/samtools
 # Directory of PICARD jars. We are using 1.55
 PICARDDIR=$HJV_ROOT/bin/picard-tools-1.55
 
-
 # The GATK jar. We are using version 1.6-7
-GATKJAR=/home/socci/Work/Varmus/PolitiK/Pipeline/java/GenomeAnalysisTK-1.6-7-g2be5704/GenomeAnalysisTK.jar
+GATKJAR=$HJV_ROOT/bin/GenomeAnalysisTK-1.6-7-g2be5704/GenomeAnalysisTK.jar
 
