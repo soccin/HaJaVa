@@ -111,6 +111,12 @@ Unpack tar file and create a single FASTA with all chromosomes in _natural_ orde
 
 Once you have made the full fasta file you can delete the original tar file (chromFa.tar.gz) and the individual chr*.fa files. 
 
+*N.B.* if you already have samtools installed build the genome fasta index file (*.fai), using the 
+
+	samtools faidx mm9.fa
+
+command. If you do not have samtools installed continue on. Section 5 will describe how to get and install samtools and prompt you to build the index then.
+
 ## 3) Install BWA
 
 The version of BWA we used was 
@@ -159,6 +165,13 @@ The code for samtools is available at:
 
 	URL:	http://samtools.sourceforge.net/
 
+### Build genome fasta index file (*.fai) 
+
+Now that you have samtools installed you need to build a genome fasta index file which is used by GATK. Do the following:
+
+	cd $HJV_ROOT/data/mm9
+	$HJV_ROOT/bin/samtools faidx mm9.fa
+
 ## 6) fastx_clipper from FASTX toolkit
 
 There are many ways to install the FASTX toolkit. All that is needed for the pipeline to run is that either the fastx_clipper binary or a symlink to it is in the $HJV_ROOT/bin directory. 
@@ -205,8 +218,16 @@ Then change to the $HJV_ROOT/bin directory and unzip the picard ZIP file
 
 	cd $HJV_ROOT/bin
 	unzip PATH_TO_PICARD_ZIP_FILE/picard-tools-1.55.zip 
-	
+
 ## 8) Install GATK
+
+The version used was: GenomeAnalysisTK-1.6-7-g2be5704
+
+*N.B.* getting this exact version may be difficult or impossible due to policy decisions made at the broad. If you have trouble getting a copy please contact us and we can assist in obtaining a copy.
+
+Place the JAR file in
+
+	$HJV_ROOT/bin/GenomeAnalysisTK-1.6-7-g2be5704/GenomeAnalysisTK.jar
 
 ## 9) Install pysam
 

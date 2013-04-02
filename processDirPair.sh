@@ -18,18 +18,14 @@ function processDir {
 
 }
 
-processDir $NORMAL $NORMALDIR
-echo "BREAK $0 Line 22"
-exit
-processDir $TUMOR $TUMORDIR
-
+#!#processDir $NORMAL $NORMALDIR
+#!#processDir $TUMOR $TUMORDIR
 
 # MERGE
 
-echo "MERGE..."
-./mergeSplitBAMs.sh $NORMAL
-./mergeSplitBAMs.sh $TUMOR
+#!#echo "MERGE..."
+#!#$SDIR/mergeSplitBAMs.sh $NORMAL
+#!#$SDIR/mergeSplitBAMs.sh $TUMOR
+#!#echo "...Merge done"
 
-echo "...Merge done"
-
-./callPairs.sh out/${NORMAL}___MERGE,MD.bam out/${TUMOR}___MERGE,MD.bam
+$SDIR/callPairs.sh out/${NORMAL}___MERGE,MD.bam out/${TUMOR}___MERGE,MD.bam
