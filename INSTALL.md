@@ -35,7 +35,7 @@ If you do not have them or if you have different version then specified here thi
 * samtools version 0.1.18 (r982:295)
 * fastx_clipper from FASTX Toolkit 0.0.13.2 [0.0.13 will not compile on the OSX]
 * picard version 1.55
-* GATK version ??
+* GATK version 1.6-7-g2be5704
 
 You will also need the following python libraries/modules.
 
@@ -75,7 +75,7 @@ If you already have the mouse (mm9) genome loaded skim the following section to 
 
 1. Make a symlink to it from $HJV_ROOT/data/mm9/mm9.fa
 
-2. Set the environment specified in the configuration of the script explained in section [[??]]
+2. Set the environment specified in the configuration of the script explained in section 12
 
 ### Getting a copy of the mouse genome
 
@@ -237,7 +237,7 @@ Explain local installation option and how to set PYTHONLIB variable
 
 Just figure out how to distribute it with package
 
-## ?) Get pipeline scripts from BitBucket
+## 11) Get pipeline scripts from BitBucket
 
 You can retrive the pipeline scripts from the BitBucket repository by cloning it using Mercurial (hg)
 If you do not have hg installed you can get a copy at
@@ -264,9 +264,51 @@ Put the test data tar file here and unpack it. You can delete the tar file after
 	tar xvf http://cbio.mskcc.org/public/SocciN/HaJaVa/PipelineFreeze/testData.tar
 
 
-## ?+1) Set user paths
+## 12) Set user paths
 
 ### bin/path.sh
 
-1. Set JAVA variable to java program, make sure to also set TMPDIR and size of virtual machine (-Xmx). Note for processing a full or half lane worth of HiSeq data you will need to have a fair amount of RAM. We have used 32Gb in our full scale running of the data sets. You probably only need 4Gb to run the test set. 
-2. 
+Note if you followed the directions at the top of this document; ie made links to this things from the $HVJ_ROOT directory then you can leave this variables as is. However make sure to set the virtual machine size for the java runtime as detailed in step (1)
+
+1. Set JAVA variable to java program, make sure to also set TMPDIR and size of virtual machine (-Xmx). Note for processing a full or half lane worth of HiSeq data you will need to have a fair amount of RAM. We have used 48Gb in our full scale running of the data sets. You might only need 8Gb to run the test data. 
+
+2. You will also need to set the following
+
+	* BWA
+	* SAMTOOLS
+
+	To point to the executable for bwa and samtools
+	
+	* PICARDDIR
+	
+	Needs to point the the PICARD JAR's directory and
+	
+	* GATKJAR
+	
+	Needs to point to the JAR file
+	
+		GenomeAnalysisTK.jar
+	
+### data/dataPaths.sh
+
+Set the paths to the Genome and BWA index in the file. Again if you have followed the above directions you can leave these variables as is. If you have these files installed someone else then set
+
+* GENOME_FASTQ
+
+To point to the fasta file for the mouse mm9 genome and
+
+* GENOME_BWA
+
+To point to the BWA prefix for the mm9 BWA index
+
+## 13) Run test
+
+Change directory to $HJV_ROOT/test and then run the test as follows:
+
+	cd $HJV_ROOT/test
+	../hajava/runTest.sh 2>&1 | tee LOG
+
+The redirection will send both stdout and stderr to the file LOG as while as sending it to the terminal. If all goes well you should see something like ...
+
+
+
