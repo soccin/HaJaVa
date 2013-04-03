@@ -20,7 +20,7 @@ TMPDIR=/tmp
 #    -Xmx 
 # To be less than the total RAM available. 
 
-JAVA="$HJV_ROOT/bin/java -Djava.io.tmpdir=$TMPDIR -Xmx48g"
+JAVA="$HJV_ROOT/bin/java -Djava.io.tmpdir=$TMPDIR -Xmx4g"
 
 # BWA executable. We are using Version: 0.5.9-r16
 BWA=$HJV_ROOT/bin/bwa
