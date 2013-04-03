@@ -26,6 +26,7 @@ echo "OBASE=" $OBASE
 
 source $SDIR/bin/paths.sh
 source $SDIR/data/dataPaths.sh
+source $SDIR/bin/defs.sh
 
 GATK="$JAVA -jar $GATKJAR "
 GATK_BIG="$JAVA -Xms256m -XX:-UseGCOverheadLimit -jar $GATKJAR "
@@ -34,7 +35,7 @@ TARGET_REGION=$SDIR/data/110624_MM9_exome_L2R_D02_EZ_HX1___MERGE_SRTChr.bed
 KNOWN_SNPS=$SDIR/data/UCSC_dbSNP128_MM9__SRTChr.bed.gz
 
 CHROMS=$($SAMTOOLS view -H $NORMAL | fgrep '@SQ' \
-    | awk '{print $2}' | sed 's/SN://' | egrep -v "(_)" | fgrep chr2)
+    | awk '{print $2}' | sed 's/SN://' | egrep -v "(_)") 
 echo "CHROMS=" $CHROMS
 if [ -z "$CHROMS" ]; then
 	echo "CHROMS<if>=" $CHROMS
@@ -67,7 +68,7 @@ done
 
 INPUTS=$(ls ${OBASE}/*___Realign.bam | awk '{print "-I "$1}')
 
-$GATK_BIG -T CountCovariates -l INFO -nt 4\
+$GATK_BIG -T CountCovariates -l INFO -nt 20 \
 	-R $GENOME_FASTQ \
 	-L $TARGET_REGION \
 	-S LENIENT \
@@ -111,7 +112,7 @@ INPUTS=$(ls ${OBASE}/*___Realign,Recal.bam | awk '{print "-I "$1}')
 # Can use threads command
 # -nt 20
 #
-$GATK -T UnifiedGenotyper \
+$GATK -T UnifiedGenotyper -nt 20 \
     -R $GENOME_FASTQ \
 	-L $TARGET_REGION \
     -A DepthOfCoverage -A AlleleBalance \

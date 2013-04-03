@@ -18,14 +18,14 @@ function processDir {
 
 }
 
-#!#processDir $NORMAL $NORMALDIR
-#!#processDir $TUMOR $TUMORDIR
+processDir $NORMAL $NORMALDIR
+processDir $TUMOR $TUMORDIR
 
 # MERGE
 
-#!#echo "MERGE..."
-#!#$SDIR/mergeSplitBAMs.sh $NORMAL
-#!#$SDIR/mergeSplitBAMs.sh $TUMOR
-#!#echo "...Merge done"
+echo "MERGE..."
+$SDIR/mergeSplitBAMs.sh $NORMAL
+$SDIR/mergeSplitBAMs.sh $TUMOR
+echo "...Merge done"
 
 $SDIR/callPairs.sh out/${NORMAL}___MERGE,MD.bam out/${TUMOR}___MERGE,MD.bam
