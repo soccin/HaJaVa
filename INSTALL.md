@@ -270,7 +270,7 @@ Put the test data tar file here and unpack it. You can delete the tar file after
 
 Note if you followed the directions at the top of this document; ie made links to this things from the $HVJ_ROOT directory then you can leave this variables as is. However make sure to set the virtual machine size for the java runtime as detailed in step (1)
 
-1. Set JAVA variable to java program, make sure to also set TMPDIR and size of virtual machine (-Xmx). Note for processing a full or half lane worth of HiSeq data you will need to have a fair amount of RAM. We have used 48Gb in our full scale running of the data sets. You might only need 8Gb to run the test data. 
+1. Set JAVA variable to java program, make sure to also set TMPDIR and size of virtual machine (-Xmx). Note for processing a full or half lane worth of HiSeq data you will need to have a fair amount of RAM. We have used 48Gb in our full scale running of the data sets. You should only need 4Gb to run the test data. 
 
 2. You will also need to set the following
 
