@@ -206,6 +206,12 @@ Also you need not do the make install which will install all the FASTX toolkit p
 
 	fastx_toolkit-0.0.13.2/src/fastx_clipper/fastx_clipper
 
+to the $HJV_Root/bin directory.
+
+For example
+
+	ln -s fastx_toolkit-0.0.13.2/src/fastx_clipper/fastx_clipper $HJV_Root/bin
+
 ## 7) PICARD tools
 
 _N.B._ both Picard and GATK need a current version of java (1.6.x) to run. Since there is often multiple version of java installed the pipeline script has an explicit variable which needs to be set to the path of the correct java executable. The instructions for this are in the following section. 
