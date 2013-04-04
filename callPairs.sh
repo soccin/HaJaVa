@@ -68,7 +68,7 @@ done
 
 INPUTS=$(ls ${OBASE}/*___Realign.bam | awk '{print "-I "$1}')
 
-$GATK_BIG -T CountCovariates -l INFO -nt 20 \
+$GATK_BIG -T CountCovariates -l INFO -nt 2 \
 	-R $GENOME_FASTQ \
 	-L $TARGET_REGION \
 	-S LENIENT \
@@ -112,7 +112,7 @@ INPUTS=$(ls ${OBASE}/*___Realign,Recal.bam | awk '{print "-I "$1}')
 # Can use threads command
 # -nt 20
 #
-$GATK -T UnifiedGenotyper -nt 20 \
+$GATK -T UnifiedGenotyper -nt 2 \
     -R $GENOME_FASTQ \
 	-L $TARGET_REGION \
     -A DepthOfCoverage -A AlleleBalance \
