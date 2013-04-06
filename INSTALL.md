@@ -39,7 +39,7 @@ If you do not have them or if you have different version then specified here thi
 
 You will also need the following python libraries/modules.
 
-* pysam
+* pysam version 0.6
 * PyVCF
 
 ## 1) Create a working directory ##
@@ -237,7 +237,52 @@ Place the JAR file in
 
 ## 9) Install pysam
 
-Explain local installation option and how to set PYTHONLIB variable
+You need to use version 0.6 which is the version that pairs with samtools 0.1.18. You can download a copy here
+
+	https://code.google.com/p/pysam/downloads/detail?name=pysam-0.6.tar.gz
+
+Note this module contains c-modules that will need to be compiled. Get the TAR file unpack it and then I would suggest doing the build step only first to make sure everything compiles ok.
+
+	python2.7 setup.py build
+
+__IMPORTANT__ on OSX 10.7 (and perhaps 10.8) the default c compiler does not work you need to use the gcc compiler
+
+	CC=/usr/bin/gcc python2.7 setup.py build
+	
+which will compile the various c files. On Mac OSX 10.7 there are numerous warnings from poorly structed c code. These appear to be harmless; also you may see a problem about the curses library missing; again this is harmless as that part of the module is not needed.
+
+Now to install the library you have several options. 
+
+1. You can do a global install (if you have permission to write to the global location) with 
+
+		python2.7 setup.py install
+
+2. If you do not want to install in the global location (perhaps you have another version of pysam there already or you do not have write access) you can do a *local* install.
+
+		python2.7 setup.py install --user
+
+	which will install in some user local directory (~/Library/Python/2.7/lib/python/site-packages on OSX 10.7).
+	
+3. Finally if you do not want to put the library in either of the standard locations you can install a version in the $HJV_ROOT directory to keep it from interferring with any other versions already on the system. To do this make a lib/python directory
+
+		mkdir -p $HJV_ROOT/python/lib/python2.7/site-packages
+		export PYTHONPATH=$HJV_ROOT/python/lib/python2.7/site-packages:$PYTHONPATH
+		python2.7 setup.py install --prefix=$HJV_ROOT/python
+	
+	Remember that if you use this method you will **ALWAYS** need to set the $PYTHONPATH environment variable before running the script. You should probably do this the same place you set the $HJV_ROOT variable. 
+	
+Finally to make sure you actually got the library installed correctly cd out of the build directory (anywhere else is find) and then do:
+
+	python2.7
+	import pysam
+	print pysam.__version__
+	
+You should see
+
+	0.6
+	
+and no errors. If not the library was not installed properly. If you see something about missing c library __ks... then you are probably using the incompatiable compiler (clang on OSX 10.7). 
+		
 
 ## 10) PyVCF
 

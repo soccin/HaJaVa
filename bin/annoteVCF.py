@@ -1,9 +1,10 @@
-#!/opt/bin/python2.7
+#!/usr/bin/env python2.7
 
 import sys
+from collections import OrderedDict, namedtuple
+
 import pysam
 import vcf
-from collections import OrderedDict, namedtuple
 
 qDepthStruct=namedtuple("qDepthStruct","qADREF qADALTF qADALTR")
 
