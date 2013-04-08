@@ -1,6 +1,6 @@
 #!/usr/bin/env python2.7
 
-import vcf
+import lib.vcf as vcf
 import sys
 
 N_NRAF_CUT=0.05

@@ -4,7 +4,7 @@ import sys
 from collections import OrderedDict, namedtuple
 
 import pysam
-import vcf
+import lib.vcf as vcf
 
 qDepthStruct=namedtuple("qDepthStruct","qADREF qADALTF qADALTR")
 
