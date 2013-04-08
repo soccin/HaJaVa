@@ -239,7 +239,7 @@ Place the JAR file in
 
 You need to use version 0.6 which is the version that pairs with samtools 0.1.18. You can download a copy here
 
-	https://code.google.com/p/pysam/downloads/detail?name=pysam-0.6.tar.gz
+	https://pysam.googlecode.com/files/pysam-0.6.tar.gz
 
 Note this module contains c-modules that will need to be compiled. Get the TAR file unpack it and then I would suggest doing the build step only first to make sure everything compiles ok.
 
