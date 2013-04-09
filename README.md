@@ -1,4 +1,4 @@
-# Installation #
+# HaJaVa Variant Calling Pipeline #
 
 ## 0) Prerequisites
 
