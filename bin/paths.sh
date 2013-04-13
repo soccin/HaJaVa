@@ -12,7 +12,7 @@
 # have lots of space there (many Gigabytes). This is used by
 # GATK, Picard and also potentially Java
 #
-TMPDIR=/tmp
+TMPDIR=/scratch/socci
 
 # JAVA executable
 # !!! Make sure tmpdir is set properly. 
@@ -20,7 +20,8 @@ TMPDIR=/tmp
 #    -Xmx 
 # To be less than the total RAM available. 
 
-JAVA="$HJV_ROOT/bin/java -Djava.io.tmpdir=$TMPDIR -Xmx4g"
+JAVA="$HJV_ROOT/bin/java -Djava.io.tmpdir=$TMPDIR -Xmx24g"
+JAVA_BIG="$HJV_ROOT/bin/java -Djava.io.tmpdir=$TMPDIR -Xmx48g"
 
 # BWA executable. We are using Version: 0.5.9-r16
 BWA=$HJV_ROOT/bin/bwa
