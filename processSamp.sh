@@ -1,5 +1,5 @@
 #!/bin/bash
-SDIR="$( cd "$( dirname "$0" )" && pwd )" 
+SDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 source $SDIR/bin/paths.sh
 source $SDIR/bin/defs.sh
@@ -27,3 +27,4 @@ $SAMTOOLS view -b -q 30 \
 	> $ODIR/${TAG}__RG,MD,QFlt30.bam
 
 $PICARD BuildBamIndex I=$ODIR/${TAG}__RG,MD,QFlt30.bam
+md5sum $ODIR/${TAG}__RG,MD,QFlt30.bam >$ODIR/${TAG}__RG,MD,QFlt30.bam.MD5
