@@ -1,5 +1,5 @@
 #!/bin/bash
-SDIR="$( cd "$( dirname "$0" )" && pwd )" 
+SDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 NORMAL=$1
 NORMALDIR=$2
