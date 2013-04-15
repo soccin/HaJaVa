@@ -1,46 +1,37 @@
 #!/bin/bash
 
-source bin/sge.sh
+SDIR="$( cd "$( dirname "$0" )" && pwd )"
+
+source $SDIR/bin/sge.sh
 
 function processDir {
 
     SAMP=$1
     DIR=$2
-
-    NUM=$(./num8nodes.sh)
-    echo "NUM=" $NUM
+    TAG=q_01_DIR__${SAMP}
 
     for R1 in $DIR/*R1*gz; do
-		DELAY=$(cat SGE_DELAY)
-		echo "DELAY="$DELAY
-        echo $NUM, $file
-        while [ $NUM -lt 1 ]; do
-            echo "Sleeping ..."
-            ./sgeUtilization.sh
-			sleep `./sgeUtilization.sh`
-            NUM=$(./num8nodes.sh)
-            echo $NUM
-        done
-
-        ./sgeUtilization.sh
-
         R2=${R1/_R1_/_R2_}
-        #echo \
-        #qsub -N $TAG $QCMD \
-        ./processSamp.sh $SAMP $R1 $R2
-
-        NUM=$(( $NUM - 1 ))
-		sleep $DELAY
-
+        qsub -pe alloc 6 -N $TAG -v HJV_ROOT=$HJV_ROOT $QCMD \
+            $SDIR/processSamp.sh $SAMP $R1 $R2
     done
 
 }
 
 DIRLIST=$1
 
+if [ -z "$HJV_ROOT" ]; then
+    echo "You need to set the environment variable HJV_ROOT"
+    echo "Please read installation instructions"
+    exit
+fi
+
 for rec in $(cat $DIRLIST); do
 	SAMPLENAME=$(echo $rec | awk -F';' '{print $1}')
 	SAMPLEDIR=$(echo $rec | awk -F';' '{print $2}')
-	TAG=q_DIR__${SAMPLENAME}
-	processDir $SAMPLENAME $SAMPLEDIR
+    TAG1=q_01_DIR__${SAMPLENAME}
+    TAG2=q_02_MERGE__${SAMPLENAME}
+    processDir $SAMPLENAME $SAMPLEDIR
+    qsub -pe alloc 6 -N $TAG2 -hold_jid $TAG1 -v HJV_ROOT=$HJV_ROOT $QCMD \
+        $SDIR/mergeSplitBAMs.sh $SAMPLENAME
 done
