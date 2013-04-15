@@ -1,5 +1,5 @@
 #!/bin/bash
-SDIR="$( cd "$( dirname "$0" )" && pwd )" 
+SDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 FASTQ1=$1
 FASTQ2=$2
@@ -24,11 +24,11 @@ gzcat $FASTQ2 | $HJV_ROOT/bin/fastx_clipper -Q33 -v -n -a $ADAPTER_2 -o ${OUT2}_
 echo "Done with clipping...rePairing..."
 $SDIR/matchPE.py ${OUT1}__TMP.fastq ${OUT2}__TMP.fastq ${OUT1} ${OUT2}
 
-# 
+#
 # Check the files are paired correctly
 #
-#RUNID=$(head -1 ${OUT1} | awk -F: '{print "^"$1}')
-#cat ${OUT1} | egrep $RUNID | awk -F" |#" '{print $1}' | md5sum >${OUT1}.MD5 &
-#cat ${OUT2} | egrep $RUNID | awk -F" |#" '{print $1}' | md5sum >${OUT2}.MD5 &
+RUNID=$(head -1 ${OUT1} | awk -F: '{print "^"$1}')
+cat ${OUT1} | egrep $RUNID | awk -F" |#" '{print $1}' | md5sum >${OUT1}.MD5 &
+cat ${OUT2} | egrep $RUNID | awk -F" |#" '{print $1}' | md5sum >${OUT2}.MD5 &
 
 rm ${OUT1}__TMP.fastq ${OUT2}__TMP.fastq
