@@ -1,5 +1,5 @@
 #!/bin/bash
-SDIR="$( cd "$( dirname "$0" )" && pwd )" 
+SDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 NORMAL=$1
 TUMOR=$2
@@ -29,13 +29,13 @@ source $SDIR/data/dataPaths.sh
 source $SDIR/bin/defs.sh
 
 GATK="$JAVA -jar $GATKJAR "
-GATK_BIG="$JAVA -Xms256m -XX:-UseGCOverheadLimit -jar $GATKJAR "
+GATK_BIG="$JAVA_BIG -Xms256m -XX:-UseGCOverheadLimit -jar $GATKJAR "
 
 TARGET_REGION=$SDIR/data/110624_MM9_exome_L2R_D02_EZ_HX1___MERGE_SRTChr.bed
 KNOWN_SNPS=$SDIR/data/UCSC_dbSNP128_MM9__SRTChr.bed.gz
 
 CHROMS=$($SAMTOOLS view -H $NORMAL | fgrep '@SQ' \
-    | awk '{print $2}' | sed 's/SN://' | egrep -v "(_)") 
+    | awk '{print $2}' | sed 's/SN://' | egrep -v "(_)")
 echo "CHROMS=" $CHROMS
 if [ -z "$CHROMS" ]; then
 	echo "CHROMS<if>=" $CHROMS
@@ -44,17 +44,32 @@ fi
 
 # Realign target creator
 
+source $SDIR/bin/sge.sh
+
+QRUN () {
+    ALLOC=$1
+    shift
+    qsub -pe alloc $ALLOC -cwd -b y -N $QTAG -v HJV_ROOT=$HJV_ROOT -V $*
+}
+
+SYNC () {
+    $QSYNC $QTAG
+}
+
+QTAG=q_10_gRTV_$OBASE
 for CHROM in $CHROMS; do
+QRUN 6 \
     $GATK -T RealignerTargetCreator \
 	-R $GENOME_FASTQ \
 	-L $CHROM -S LENIENT \
 	-o ${OBASE}/${CHROM}___output.intervals \
 	-I $NORMAL -I $TUMOR
 done
+SYNC
 
-# Realign
-
+QTAG=q_11_gIR_$OBASE
 for CHROM in $CHROMS; do
+QRUN 6 \
     $GATK -T IndelRealigner \
 	-R $GENOME_FASTQ \
 	-L $CHROM -S LENIENT \
@@ -63,11 +78,14 @@ for CHROM in $CHROMS; do
 	-I $NORMAL -I $TUMOR \
 	-o ${OBASE}/${CHROM}___Realign.bam
 done
+SYNC
 
 # CountCovariates
 
 INPUTS=$(ls ${OBASE}/*___Realign.bam | awk '{print "-I "$1}')
 
+QTAG=q_12_gCC_$OBASE
+QRUN 12 \
 $GATK_BIG -T CountCovariates -l INFO -nt 24 \
 	-R $GENOME_FASTQ \
 	-L $TARGET_REGION \
@@ -82,18 +100,23 @@ $GATK_BIG -T CountCovariates -l INFO -nt 24 \
 	-I $INPUTS \
 	-recalFile ${OBASE}/_recal_data.csv
 
+SYNC
+
 # Recalibrate
+QTAG=q_13_gTblR_$OBASE
 for BAM in ${OBASE}/*___Realign.bam; do
     CHROM=$(echo $BAM | sed 's/.*chr/chr/' | sed 's/___.*//')
     fgrep -w $CHROM $TARGET_REGION >${OBASE}/${CHROM}__TARGET.bed
-        $GATK_BIG -T TableRecalibration -l INFO \
-        	-R $GENOME_FASTQ \
-        	-L ${OBASE}/${CHROM}__TARGET.bed \
-            -S LENIENT \
-        	-recalFile ${OBASE}/_recal_data.csv \
-        	-I ${BAM} \
-        	-o ${BAM%.bam},Recal.bam
+    QRUN 6 \
+    $GATK_BIG -T TableRecalibration -l INFO \
+    	-R $GENOME_FASTQ \
+    	-L ${OBASE}/${CHROM}__TARGET.bed \
+        -S LENIENT \
+    	-recalFile ${OBASE}/_recal_data.csv \
+    	-I ${BAM} \
+    	-o ${BAM%.bam},Recal.bam
 done
+SYNC
 
 # Unified Genotyper
 
@@ -112,6 +135,9 @@ INPUTS=$(ls ${OBASE}/*___Realign,Recal.bam | awk '{print "-I "$1}')
 # Can use threads command
 # -nt 20
 #
+
+QTAG=q_14_gUGT_$OBASE
+QRUN 12 \
 $GATK -T UnifiedGenotyper -nt 24 \
     -R $GENOME_FASTQ \
 	-L $TARGET_REGION \
@@ -125,9 +151,12 @@ $GATK -T UnifiedGenotyper -nt 24 \
     $INPUTS \
     -o ${SBASE}_UGT_SNP.vcf
 
+SYNC
+
 # Need to merge for annoteVCF.py
 
 BAMS=$(ls ${OBASE}/*Realign,Recal.bam | awk '{print "I="$1}')
+
 $PICARD MergeSamFiles CREATE_INDEX=true SO=coordinate O=${OBASE}_Realign,Recal.bam $BAMS
 
 #
