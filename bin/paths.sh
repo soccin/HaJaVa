@@ -15,13 +15,13 @@
 TMPDIR=/scratch/socci
 
 # JAVA executable
-# !!! Make sure tmpdir is set properly. 
+# !!! Make sure tmpdir is set properly.
 # Also check to make sure to set
-#    -Xmx 
-# To be less than the total RAM available. 
+#    -Xmx
+# To be less than the total RAM available.
 
-JAVA="$HJV_ROOT/bin/java -Djava.io.tmpdir=$TMPDIR -Xmx24g"
-JAVA_BIG="$HJV_ROOT/bin/java -Djava.io.tmpdir=$TMPDIR -Xmx48g"
+JAVA="$HJV_ROOT/bin/java -Djava.io.tmpdir=$TMPDIR -Xmx32g"
+JAVA_BIG="$HJV_ROOT/bin/java -Djava.io.tmpdir=$TMPDIR -Xmx40g"
 
 # BWA executable. We are using Version: 0.5.9-r16
 BWA=$HJV_ROOT/bin/bwa
