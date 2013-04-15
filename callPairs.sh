@@ -49,7 +49,8 @@ source $SDIR/bin/sge.sh
 QRUN () {
     ALLOC=$1
     shift
-    qsub -pe alloc $ALLOC -cwd -b y -N $QTAG -v HJV_ROOT=$HJV_ROOT -V $*
+    RET=$(qsub -pe alloc $ALLOC -N $QTAG -v HJV_ROOT=$HJV_ROOT $SDIR/bin/sgeWrap.sh $*)
+    echo "#QRUN RET=" $RET
 }
 
 SYNC () {
