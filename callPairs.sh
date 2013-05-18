@@ -1,6 +1,12 @@
 #!/bin/bash
 SDIR="$( cd "$( dirname "$0" )" && pwd )"
 
+if [ -z "$HJV_ROOT" ]; then
+    echo "You need to set the environment variable HJV_ROOT"
+    echo "Please read installation instructions"
+    exit
+fi
+
 NORMAL=$1
 TUMOR=$2
 
