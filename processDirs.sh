@@ -12,7 +12,7 @@ function processDir {
 
     for R1 in $DIR/*R1*gz; do
         R2=${R1/_R1_/_R2_}
-        qsub -l virtual_free=30G -pe alloc 8 -N $TAG \
+        qsub -l virtual_free=17G -pe alloc 8 -N $TAG \
         -v HJV_ROOT=$HJV_ROOT $QCMD \
             $SDIR/processSamp.sh $SAMP $R1 $R2
     done
@@ -35,7 +35,7 @@ for rec in $(cat $DIRLIST); do
     TAG1=qq_01_DIR__${SAMPLENAME}
     TAG2=qq_02_MERGE__${SAMPLENAME}
     processDir $SAMPLENAME $SAMPLEDIR
-    qsub -l virtual_free=30G -pe alloc 3 \
+    qsub -l virtual_free=17G -pe alloc 3 \
     -N $TAG2 -hold_jid $TAG1 -v HJV_ROOT=$HJV_ROOT $QCMD \
         $SDIR/mergeSplitBAMs.sh $SAMPLENAME
 done
