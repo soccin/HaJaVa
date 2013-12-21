@@ -7,9 +7,15 @@
 ##
 
 
-ADAPTER_SET=TrueSeqFull
+ADAPTER_SET=MinCommon
 
 case $ADAPTER_SET in
+
+    MinCommon)
+        # TrueSeq Full
+        ADAPTER_1=AGATCGGAAGAGC
+        ADAPTER_2=AGATCGGAAGAGC
+        ;;
 
     TrueSeqFull)
         # TrueSeq Full
