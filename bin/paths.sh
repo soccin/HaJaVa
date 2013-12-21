@@ -20,7 +20,7 @@ TMPDIR=/scratch/socci
 #    -Xmx
 # To be less than the total RAM available.
 
-JAVA="$HJV_ROOT/bin/java -Djava.io.tmpdir=$TMPDIR -Xmx32g"
+JAVA="$HJV_ROOT/bin/java -Djava.io.tmpdir=$TMPDIR -Xmx30g"
 JAVA_BIG="$HJV_ROOT/bin/java -Djava.io.tmpdir=$TMPDIR -Xmx40g"
 
 # BWA executable. We are using Version: 0.5.9-r16
