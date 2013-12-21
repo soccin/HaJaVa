@@ -1,5 +1,5 @@
 #!/bin/bash
-SDIR="$( cd "$( dirname "$0" )" && pwd )" 
+SDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 #
 # This script does all the processing that can be done on a single fastq file
@@ -53,6 +53,8 @@ OUT1=${BASE1}__clip.fastq
 OUT2=${BASE2}__clip.fastq
 
 $SDIR/bin/clipAdapters.sh $FASTQ1 $FASTQ2 $OUT1 $OUT2 $ADAPTER_1 $ADAPTER_2
+
+#echo "BREAK::doMapping.sh Line75";exit
 
 IN1=$OUT1
 IN2=$OUT2
