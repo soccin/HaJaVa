@@ -17,6 +17,8 @@ mkdir -p ${ODIR}
 
 $SDIR/doMapping.sh $R1 $R2 $SAMPLE $SAMPLE $TAG $SAMPLE
 
+#echo "BREAK::processSamp.sh LINE 20"; exit
+
 $PICARD MarkDuplicates REMOVE_DUPLICATES=true CREATE_INDEX=true \
 	I=$ODIR/${TAG}__RG.bam \
 	O=$ODIR/${TAG}__RG,MD.bam \
