@@ -52,10 +52,12 @@ fi
 
 source $SDIR/bin/sge.sh
 
+QUEUES=lau.q,mad.q,nce.q
+
 QRUN () {
     ALLOC=$1
     shift
-    RET=$(qsub -pe alloc $ALLOC -N $QTAG -v HJV_ROOT=$HJV_ROOT $SDIR/bin/sgeWrap.sh $*)
+    RET=$(qsub -q $QUEUES -pe alloc $ALLOC -N $QTAG -v HJV_ROOT=$HJV_ROOT $SDIR/bin/sgeWrap.sh $*)
     echo "#QRUN RET=" $RET
 }
 
@@ -65,7 +67,7 @@ SYNC () {
 
 QTAG=q_10_gRTV_$OBASE
 for CHROM in $CHROMS; do
-QRUN 6 \
+QRUN 11 \
     $GATK -T RealignerTargetCreator \
 	-R $GENOME_FASTQ \
 	-L $CHROM -S LENIENT \
@@ -76,7 +78,7 @@ SYNC
 
 QTAG=q_11_gIR_$OBASE
 for CHROM in $CHROMS; do
-QRUN 6 \
+QRUN 11 \
     $GATK -T IndelRealigner \
 	-R $GENOME_FASTQ \
 	-L $CHROM -S LENIENT \
@@ -92,7 +94,7 @@ SYNC
 INPUTS=$(ls ${OBASE}/*___Realign.bam | awk '{print "-I "$1}')
 
 QTAG=q_12_gCC_$OBASE
-QRUN 12 \
+QRUN 11 \
 $GATK_BIG -T CountCovariates -l INFO -nt 24 \
 	-R $GENOME_FASTQ \
 	-L $TARGET_REGION \
@@ -114,7 +116,7 @@ QTAG=q_13_gTblR_$OBASE
 for BAM in ${OBASE}/*___Realign.bam; do
     CHROM=$(echo $BAM | sed 's/.*chr/chr/' | sed 's/___.*//')
     fgrep -w $CHROM $TARGET_REGION >${OBASE}/${CHROM}__TARGET.bed
-    QRUN 6 \
+    QRUN 11 \
     $GATK_BIG -T TableRecalibration -l INFO \
     	-R $GENOME_FASTQ \
     	-L ${OBASE}/${CHROM}__TARGET.bed \
