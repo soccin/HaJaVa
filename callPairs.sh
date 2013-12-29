@@ -52,7 +52,7 @@ fi
 
 source $SDIR/bin/sge.sh
 
-QUEUES=lau.q,mad.q,nce.q
+QUEUES=mad.q,nce.q
 
 QRUN () {
     ALLOC=$1
@@ -168,7 +168,14 @@ BAMS=$(ls ${OBASE}/*Realign,Recal.bam | awk '{print "I="$1}')
 
 $PICARD MergeSamFiles CREATE_INDEX=true SO=coordinate O=${OBASE}_Realign,Recal.bam $BAMS
 
-#
+QTAG=q_15_SPLIT_$OBASE
+QRUN 6 \
+/opt/bin/java7 -Xmx16g -Djava.io.tmpdir=/scratch/socci \
+	-jar /opt/common/gatk/GenomeAnalysisTK-2.6-3-gdee51c4/GenomeAnalysisTK.jar \
+	-T SplitSamFile -R $GENOME_FASTQ \
+	--outputRoot ${OBASE}_Realign,Recal____ \
+	-I ${OBASE}_Realign,Recal.bam
+
 # Fix .bai for pysam
 ln -s ${OBASE}_Realign,Recal.bai ${OBASE}_Realign,Recal.bam.bai
 
