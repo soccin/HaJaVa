@@ -210,3 +210,20 @@ for file in ${OBASE}_Realign,Recal____*bam; do
 done
 SYNC
 
+QTAG=qq_17_MUTECT_$OBASE
+QRUN 3 \
+/opt/bin/java6 -Xmx4g -Djava.io.tmpdir=/scratch/socci -jar $SDIR/bin/muTect-1.1.4.jar \
+    --analysis_type MuTect \
+    --read_filter BadCigar \
+    --reference_sequence $GENOME_FASTQ \
+    --dbsnp $DBSNP_VCF \
+    --intervals $TARGET_REGION \
+    --input_file:normal ${OBASE}_Realign,Recal____${SAMPLE_NORMAL}.bam \
+    --input_file:tumor  ${OBASE}_Realign,Recal____${SAMPLE_TUMOR}.bam \
+    --coverage_file $OBASE/coverageWig___${CHR}.txt \
+    --enable_extended_output \
+    -tdf $OBASE/coverageTumor___${CHR}.txt \
+    -ndf $OBASE/coverageNormal___${CHR}.txt \
+    --vcf $OBASE/mutect___${CHR}.vcf \
+    --out ${OBASE}__mutect___${CHR}.out
+
