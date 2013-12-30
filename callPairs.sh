@@ -7,28 +7,32 @@ if [ -z "$HJV_ROOT" ]; then
     exit
 fi
 
-NORMAL=$1
-TUMOR=$2
 
-#
-# Deals with an issue on the isilon
-#
-#source bin/funcs.sh
-#checkFile $NORMAL
-#checkFile $TUMOR
-#checkFile ${NORMAL%%.bam}.bai
-#checkFile ${TUMOR%%.bam}.bai
-#echo "FILES CHECKED"
+SAMPLE_NORMAL=$1
+SAMPLE_TUMOR=$2
 
-SAMPLE_NORMAL=$(echo $NORMAL | perl -ne 'm[out/(.*?)(___MERGE|/)];print $1')
-SAMPLE_TUMOR=$(echo $TUMOR | perl -ne 'm[out/(.*?)(___MERGE|/)];print $1')
+NORMAL=out/${SAMPLE_NORMAL}___MERGE,MD.bam
+TUMOR=out/${SAMPLE_TUMOR}___MERGE,MD.bam
+
 OBASE=${SAMPLE_NORMAL}____${SAMPLE_TUMOR}
 mkdir -p $OBASE
+
 
 echo "------------------------------------------------------------------"
 echo "callPairs"
 echo "NORMAL, TUMOR=" $NORMAL, $TUMOR
 echo "OBASE=" $OBASE
+echo SAMPLE_NORMAL=$SAMPLE_NORMAL
+echo SAMPLE_TUMOR=$SAMPLE_TUMOR
+##
+# GATK PARAMETERS
+#
+MBQ=17
+DCOV=500
+STAND_CALL_CONF=30
+STAND_EMIT_CONF=30
+
+SBASE=${OBASE}___MBQ_${MBQ}__CCONF_${STAND_CALL_CONF}
 
 source $SDIR/bin/paths.sh
 source $SDIR/data/dataPaths.sh
@@ -65,9 +69,14 @@ SYNC () {
     $QSYNC $QTAG
 }
 
-QTAG=q_10_gRTV_$OBASE
+
+#####################################################################################
+#####################################################################################
+#####################################################################################
+
+QTAG=qq_10_gRTV_$OBASE
 for CHROM in $CHROMS; do
-QRUN 11 \
+QRUN 6 \
     $GATK -T RealignerTargetCreator \
 	-R $GENOME_FASTQ \
 	-L $CHROM -S LENIENT \
@@ -76,9 +85,9 @@ QRUN 11 \
 done
 SYNC
 
-QTAG=q_11_gIR_$OBASE
+QTAG=qq_11_gIR_$OBASE
 for CHROM in $CHROMS; do
-QRUN 11 \
+QRUN 6 \
     $GATK -T IndelRealigner \
 	-R $GENOME_FASTQ \
 	-L $CHROM -S LENIENT \
@@ -93,8 +102,8 @@ SYNC
 
 INPUTS=$(ls ${OBASE}/*___Realign.bam | awk '{print "-I "$1}')
 
-QTAG=q_12_gCC_$OBASE
-QRUN 11 \
+QTAG=qq_12_gCC_$OBASE
+QRUN 13 \
 $GATK_BIG -T CountCovariates -l INFO -nt 24 \
 	-R $GENOME_FASTQ \
 	-L $TARGET_REGION \
@@ -112,12 +121,12 @@ $GATK_BIG -T CountCovariates -l INFO -nt 24 \
 SYNC
 
 # Recalibrate
-QTAG=q_13_gTblR_$OBASE
+QTAG=qq_13_gTblR_$OBASE
 for BAM in ${OBASE}/*___Realign.bam; do
     CHROM=$(echo $BAM | sed 's/.*chr/chr/' | sed 's/___.*//')
     fgrep -w $CHROM $TARGET_REGION >${OBASE}/${CHROM}__TARGET.bed
-    QRUN 11 \
-    $GATK_BIG -T TableRecalibration -l INFO \
+    QRUN 6 \
+    $GATK -T TableRecalibration -l INFO \
     	-R $GENOME_FASTQ \
     	-L ${OBASE}/${CHROM}__TARGET.bed \
         -S LENIENT \
@@ -129,15 +138,6 @@ SYNC
 
 # Unified Genotyper
 
-##
-# GATK PARAMETERS
-#
-MBQ=17
-DCOV=500
-STAND_CALL_CONF=30
-STAND_EMIT_CONF=30
-
-SBASE=${OBASE}___MBQ_${MBQ}__CCONF_${STAND_CALL_CONF}
 INPUTS=$(ls ${OBASE}/*___Realign,Recal.bam | awk '{print "-I "$1}')
 
 #
@@ -145,8 +145,8 @@ INPUTS=$(ls ${OBASE}/*___Realign,Recal.bam | awk '{print "-I "$1}')
 # -nt 20
 #
 
-QTAG=q_14_gUGT_$OBASE
-QRUN 12 \
+QTAG=qq_14_gUGT_$OBASE
+QRUN 22 \
 $GATK -T UnifiedGenotyper -nt 24 \
     -R $GENOME_FASTQ \
 	-L $TARGET_REGION \
@@ -160,25 +160,53 @@ $GATK -T UnifiedGenotyper -nt 24 \
     $INPUTS \
     -o ${SBASE}_UGT_SNP.vcf
 
-SYNC
-
 # Need to merge for annoteVCF.py
 
 BAMS=$(ls ${OBASE}/*Realign,Recal.bam | awk '{print "I="$1}')
-
+QRUN 6 \
 $PICARD MergeSamFiles CREATE_INDEX=true SO=coordinate O=${OBASE}_Realign,Recal.bam $BAMS
 
-QTAG=q_15_SPLIT_$OBASE
-QRUN 6 \
-/opt/bin/java7 -Xmx16g -Djava.io.tmpdir=/scratch/socci \
-	-jar /opt/common/gatk/GenomeAnalysisTK-2.6-3-gdee51c4/GenomeAnalysisTK.jar \
-	-T SplitSamFile -R $GENOME_FASTQ \
-	--outputRoot ${OBASE}_Realign,Recal____ \
-	-I ${OBASE}_Realign,Recal.bam
+SYNC
 
 # Fix .bai for pysam
 ln -s ${OBASE}_Realign,Recal.bai ${OBASE}_Realign,Recal.bam.bai
 
 $SDIR/bin/annoteVCF.py ${SBASE}_UGT_SNP.vcf ${OBASE}_Realign,Recal.bam $MBQ >${SBASE}_UGT_SNP_AnnoteQDP.vcf
 $SDIR/bin/getSomaticEvents.py ${SBASE}_UGT_SNP_AnnoteQDP.vcf $SAMPLE_NORMAL $SAMPLE_TUMOR >${SBASE}_UGT_SNP___EVT.txt
+
+
+echo "*******************"
+echo
+echo $SAMPLE_NORMAL
+echo $SAMPLE_TUMOR
+
+N_COV_CUT=8
+T_COV_CUT=14
+N_NRAF_CUT=0.05
+T_NRAF_CUT=0.15
+
+N_NRAF_PCT=$(echo $N_NRAF_CUT | awk '{print $1*100}')
+T_NRAF_PCT=$(echo $T_NRAF_CUT | awk '{print $1*100}')
+
+$SDIR/mkMAF.sh ${SBASE}_UGT_SNP_AnnoteQDP.vcf \
+    $SAMPLE_NORMAL $SAMPLE_TUMOR \
+    $N_COV_CUT $T_COV_CUT $N_NRAF_CUT $T_NRAF_CUT \
+    | $SDIR/pA_HAJAVA_FILTER_C.py \
+    >${SBASE}_UGT_SNP_FILTER_C___MAF.csv
+
+QTAG=qq_15_SPLIT_$OBASE
+QRUN 6 \
+/opt/bin/java7 -Xmx16g -Djava.io.tmpdir=/scratch/socci \
+	-jar /opt/common/gatk/GenomeAnalysisTK-2.6-3-gdee51c4/GenomeAnalysisTK.jar \
+	-T SplitSamFile -R $GENOME_FASTQ \
+	--outputRoot ${OBASE}_Realign,Recal____ \
+	-I ${OBASE}_Realign,Recal.bam
+SYNC
+
+QTAG=qq_16_INDEX_$OBASE
+for file in ${OBASE}_Realign,Recal____*bam; do
+    QRUN 6 \
+    $PICARD BuildBamIndex I=$file
+done
+SYNC
 
