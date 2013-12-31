@@ -74,6 +74,9 @@ SYNC () {
 #####################################################################################
 #####################################################################################
 
+
+if [ "" ]; then
+    exit
 QTAG=qq_10_gRTV_$OBASE
 for CHROM in $CHROMS; do
 QRUN 6 \
@@ -171,9 +174,16 @@ SYNC
 # Fix .bai for pysam
 ln -s ${OBASE}_Realign,Recal.bai ${OBASE}_Realign,Recal.bam.bai
 
+QTAG=qq_15_SPLIT_$OBASE
+QRUN 6 \
+/opt/bin/java7 -Xmx16g -Djava.io.tmpdir=/scratch/socci \
+    -jar /opt/common/gatk/GenomeAnalysisTK-2.6-3-gdee51c4/GenomeAnalysisTK.jar \
+    -T SplitSamFile -R $GENOME_FASTQ \
+    --outputRoot ${OBASE}_Realign,Recal____ \
+    -I ${OBASE}_Realign,Recal.bam
+
 $SDIR/bin/annoteVCF.py ${SBASE}_UGT_SNP.vcf ${OBASE}_Realign,Recal.bam $MBQ >${SBASE}_UGT_SNP_AnnoteQDP.vcf
 $SDIR/bin/getSomaticEvents.py ${SBASE}_UGT_SNP_AnnoteQDP.vcf $SAMPLE_NORMAL $SAMPLE_TUMOR >${SBASE}_UGT_SNP___EVT.txt
-
 
 echo "*******************"
 echo
@@ -194,14 +204,8 @@ $SDIR/mkMAF.sh ${SBASE}_UGT_SNP_AnnoteQDP.vcf \
     | $SDIR/pA_HAJAVA_FILTER_C.py \
     >${SBASE}_UGT_SNP_FILTER_C___MAF.csv
 
-QTAG=qq_15_SPLIT_$OBASE
-QRUN 6 \
-/opt/bin/java7 -Xmx16g -Djava.io.tmpdir=/scratch/socci \
-	-jar /opt/common/gatk/GenomeAnalysisTK-2.6-3-gdee51c4/GenomeAnalysisTK.jar \
-	-T SplitSamFile -R $GENOME_FASTQ \
-	--outputRoot ${OBASE}_Realign,Recal____ \
-	-I ${OBASE}_Realign,Recal.bam
 SYNC
+
 
 QTAG=qq_16_INDEX_$OBASE
 for file in ${OBASE}_Realign,Recal____*bam; do
@@ -220,10 +224,61 @@ QRUN 3 \
     --intervals $TARGET_REGION \
     --input_file:normal ${OBASE}_Realign,Recal____${SAMPLE_NORMAL}.bam \
     --input_file:tumor  ${OBASE}_Realign,Recal____${SAMPLE_TUMOR}.bam \
-    --coverage_file $OBASE/coverageWig___${CHR}.txt \
+    --coverage_file $OBASE/coverageWig.txt \
     --enable_extended_output \
-    -tdf $OBASE/coverageTumor___${CHR}.txt \
-    -ndf $OBASE/coverageNormal___${CHR}.txt \
-    --vcf $OBASE/mutect___${CHR}.vcf \
-    --out ${OBASE}__mutect___${CHR}.out
+    -tdf $OBASE/coverageTumor.txt \
+    -ndf $OBASE/coverageNormal.txt \
+    --vcf $OBASE/mutect.vcf \
+    --out ${OBASE}__mutect.out
+SYNC
+
+
+BEDTOOLS=/home/socci/bin/BED/bedtools
+
+
+$SDIR/bin/Convertors/mutect2EVT.py ${OBASE}__mutect.out \
+    | fgrep -v REJECT | fgrep -v NOT_COVERED \
+    | $SDIR/bin/Convertors/evt2bed.py \
+    | $BEDTOOLS sort -i - \
+    | $BEDTOOLS intersect -a - -b $TARGET_REGION -wa \
+    | $SDIR/bin/Convertors/bed2evt.sh \
+    > ${OBASE}__mutect__KEEP_COVERED_TARGETED___events.txt
+
+$SDIR/bin/Convertors/hajavaMaf2EVT.py ${SBASE}_UGT_SNP_FILTER_C___MAF.csv \
+    | $SDIR/bin/Convertors/evt2bed.py \
+    | $BEDTOOLS sort -i - \
+    | $BEDTOOLS intersect -a - -b $TARGET_REGION -wa \
+    | $SDIR/bin/Convertors/bed2evt.sh \
+    > ${SBASE}_UGT_SNP_FILTER_C___events.txt
+
+$SDIR/bin/joinEvtTables.py \
+    ${OBASE}__mutect__KEEP_COVERED_TARGETED___events.txt \
+    ${SBASE}_UGT_SNP_FILTER_C___events.txt \
+    >${SBASE}_UGT_SNP_FILTER_C____MuTect__UNION.txt
+
+fi
+
+ANNOTATOR=/home/socci/Work/Varmus/PolitiK/Pipeline/ver13/Annotation
+
+$ANNOTATOR/addAnnotation.py \
+    < ${SBASE}_UGT_SNP_FILTER_C____MuTect__UNION.txt \
+    > ${OBASE}_ANNOTE.txt 2> ${OBASE}_MISSING.txt
+
+$ANNOTATOR/doAnnovar.sh ${OBASE}_MISSING.txt
+
+$ANNOTATOR/loadAnnovarGeneAnno.py ${OBASE}_MISSING.txt
+
+$ANNOTATOR/addAnnotation.py \
+    < ${SBASE}_UGT_SNP_FILTER_C____MuTect__UNION.txt \
+    2> ${OBASE}_MISSING.txt \
+    > ${SBASE}_UGT_SNP_FILTER_C____MuTect__UNION__ANNOTE.txt
+
+NORMALDB=/home/socci/Work/Varmus/PolitiK/Pipeline/ver13/NormalEventsMask/normalEventMask__ver12
+
+cat ${SBASE}_UGT_SNP_FILTER_C____MuTect__UNION__ANNOTE.txt \
+    | fgrep -vf $NORMALDB \
+    > ${SBASE}_UGT_SNP_FILTER_C____MuTect__UNION__ANNOTE__MinusNormals.txt
+
+
+
 
