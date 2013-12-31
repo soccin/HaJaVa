@@ -1,0 +1,6 @@
+#!/bin/bash
+
+HEADER="CHROM;POS;REF;ALT;TUMOR;BASE;METHOD;CALL;FLAG;COVERED;SCORE;T_NRAF;T_DP;T_RDP;T_ADP;N_NRAF;N_DP;N_RDP;N_ADP"
+
+echo $HEADER | tr ';' '\t'
+cut -f4 $1 | tr ';' '\t'
