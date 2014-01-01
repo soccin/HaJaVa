@@ -74,9 +74,6 @@ SYNC () {
 #####################################################################################
 #####################################################################################
 
-
-if [ "" ]; then
-    exit
 QTAG=qq_10_gRTV_$OBASE
 for CHROM in $CHROMS; do
 QRUN 6 \
@@ -256,7 +253,6 @@ $SDIR/bin/joinEvtTables.py \
     ${SBASE}_UGT_SNP_FILTER_C___events.txt \
     >${SBASE}_UGT_SNP_FILTER_C____MuTect__UNION.txt
 
-fi
 
 ANNOTATOR=/home/socci/Work/Varmus/PolitiK/Pipeline/ver13/Annotation
 

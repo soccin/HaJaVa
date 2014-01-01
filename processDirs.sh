@@ -35,7 +35,7 @@ for rec in $(cat $DIRLIST); do
     TAG1=qq_01_DIR__${SAMPLENAME}
     TAG2=qq_02_MERGE__${SAMPLENAME}
     processDir $SAMPLENAME $SAMPLEDIR
-    qsub -pe alloc 6 \
+    qsub -pe alloc 8 \
     -N $TAG2 -hold_jid $TAG1 -v HJV_ROOT=$HJV_ROOT $QCMD \
         $SDIR/mergeSplitBAMs.sh $SAMPLENAME
 done
