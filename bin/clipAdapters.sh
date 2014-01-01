@@ -23,7 +23,7 @@ if [ -e config.sh ]; then
     source config.sh
 fi
 
-MIN_ADAPTER_LEN=8
+MIN_ADAPTER_LEN=10
 if [ "$HJV_READLIMIT" != "" ]; then
     echo HJV_READLIMIT=[$HJV_READLIMIT]
     gzcat $FASTQ1 | head -$HJV_READLIMIT | $HJV_ROOT/bin/fastx_clipper -M $MIN_ADAPTER_LEN -Q33 -v -n -a $ADAPTER_1 -o ${OUT1}__TMP.fastq > ${OUT1}__CLIP.log
