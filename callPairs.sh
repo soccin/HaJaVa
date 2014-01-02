@@ -11,19 +11,30 @@ fi
 SAMPLE_NORMAL=$1
 SAMPLE_TUMOR=$2
 
-NORMAL=out/${SAMPLE_NORMAL}___MERGE,MD.bam
-TUMOR=out/${SAMPLE_TUMOR}___MERGE,MD.bam
+NORMAL=results/$SAMPLE_NORMAL/out/${SAMPLE_NORMAL}___MERGE,MD.bam
+TUMOR=results/$SAMPLE_TUMOR/out/${SAMPLE_TUMOR}___MERGE,MD.bam
 
-OBASE=${SAMPLE_NORMAL}____${SAMPLE_TUMOR}
-mkdir -p $OBASE
-
+if [ ! -f $NORMAL ]; then
+	echo NORMAL BAM DOES NOT EXISTS [$NORMAL]
+	exit 1
+fi
+if [ ! -f $TUMOR ]; then
+	echo TUMOR BAM DOES NOT EXISTS [$TUMOR]
+	exit 1
+fi
 
 echo "------------------------------------------------------------------"
 echo "callPairs"
 echo "NORMAL, TUMOR=" $NORMAL, $TUMOR
-echo "OBASE=" $OBASE
 echo SAMPLE_NORMAL=$SAMPLE_NORMAL
 echo SAMPLE_TUMOR=$SAMPLE_TUMOR
+echo
+
+OBASE=${SAMPLE_NORMAL}____${SAMPLE_TUMOR}
+echo "OBASE=" $OBASE
+mkdir -p $OBASE
+
+
 ##
 # GATK PARAMETERS
 #
