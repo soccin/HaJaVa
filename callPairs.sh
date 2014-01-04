@@ -175,7 +175,7 @@ $GATK -T UnifiedGenotyper -nt 24 \
 
 BAMS=$(ls ${OBASE}/*Realign,Recal.bam | awk '{print "I="$1}')
 QRUN 6 \
-$PICARD MergeSamFiles CREATE_INDEX=true SO=coordinate O=${OBASE}_Realign,Recal.bam $BAMS
+$PICARD MergeSamFiles MAX_RECORDS_IN_RAM=5000000 CREATE_INDEX=true SO=coordinate O=${OBASE}_Realign,Recal.bam $BAMS
 
 SYNC
 
