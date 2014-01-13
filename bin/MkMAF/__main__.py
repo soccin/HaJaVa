@@ -1,6 +1,7 @@
 import cPickle
 import sys
-import vcf
+import lib.vcf as vcf
+
 
 from SomaticDetector import *
 from MAFRec import MAFRec

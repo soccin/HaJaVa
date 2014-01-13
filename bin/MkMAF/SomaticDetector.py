@@ -1,6 +1,6 @@
-#!/opt/bin/python2.7
+#!/usr/bin/env python2.7
 
-import vcf
+import lib.vcf as vcf
 import sys
 
 def getGT(sample):
