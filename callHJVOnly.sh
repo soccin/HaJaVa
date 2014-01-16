@@ -14,18 +14,8 @@ SAMPLE_TUMOR=$2
 NORMAL=results/$SAMPLE_NORMAL/out/${SAMPLE_NORMAL}___MERGE,MD.bam
 TUMOR=results/$SAMPLE_TUMOR/out/${SAMPLE_TUMOR}___MERGE,MD.bam
 
-if [ ! -f $NORMAL ]; then
-	echo NORMAL BAM DOES NOT EXISTS [$NORMAL]
-	exit 1
-fi
-if [ ! -f $TUMOR ]; then
-	echo TUMOR BAM DOES NOT EXISTS [$TUMOR]
-	exit 1
-fi
-
 echo "------------------------------------------------------------------"
 echo "callPairs"
-echo "NORMAL, TUMOR=" $NORMAL, $TUMOR
 echo SAMPLE_NORMAL=$SAMPLE_NORMAL
 echo SAMPLE_TUMOR=$SAMPLE_TUMOR
 echo
@@ -54,14 +44,6 @@ GATK_BIG="$JAVA_BIG -Xms256m -XX:-UseGCOverheadLimit -jar $GATKJAR "
 TARGET_REGION=$SDIR/data/110624_MM9_exome_L2R_D02_EZ_HX1___MERGE_SRTChr.bed
 KNOWN_SNPS=$SDIR/data/UCSC_dbSNP128_MM9__SRTChr.bed.gz
 
-CHROMS=$($SAMTOOLS view -H $NORMAL | fgrep '@SQ' \
-    | awk '{print $2}' | sed 's/SN://' | egrep -v "(_)")
-echo "CHROMS=" $CHROMS
-if [ -z "$CHROMS" ]; then
-	echo "CHROMS<if>=" $CHROMS
-	exit
-fi
-
 # Realign target creator
 
 source $SDIR/bin/sge.sh
@@ -86,18 +68,18 @@ SYNC () {
 
 QTAG=qq_10_gRTV_$OBASE
 for CHROM in $CHROMS; do
-QRUN 6 \
+QRUN 1 \
     echo $GATK -T RealignerTargetCreator \
 	-R $GENOME_FASTQ \
 	-L $CHROM -S LENIENT \
 	-o ${OBASE}/${CHROM}___output.intervals \
 	-I $NORMAL -I $TUMOR
 done
-SYNC
+echo SYNC
 
 QTAG=qq_11_gIR_$OBASE
 for CHROM in $CHROMS; do
-QRUN 6 \
+QRUN 1 \
     echo $GATK -T IndelRealigner \
 	-R $GENOME_FASTQ \
 	-L $CHROM -S LENIENT \
@@ -106,14 +88,14 @@ QRUN 6 \
 	-I $NORMAL -I $TUMOR \
 	-o ${OBASE}/${CHROM}___Realign.bam
 done
-SYNC
+echo SYNC
 
 # CountCovariates
 
 INPUTS=$(ls ${OBASE}/*___Realign.bam | awk '{print "-I "$1}')
 
 QTAG=qq_12_gCC_$OBASE
-QRUN 13 \
+QRUN 1 \
 echo $GATK_BIG -T CountCovariates -l INFO -nt 24 \
 	-R $GENOME_FASTQ \
 	-L $TARGET_REGION \
@@ -128,14 +110,14 @@ echo $GATK_BIG -T CountCovariates -l INFO -nt 24 \
 	-I $INPUTS \
 	-recalFile ${OBASE}/_recal_data.csv
 
-SYNC
+echo SYNC
 
 # Recalibrate
 QTAG=qq_13_gTblR_$OBASE
 for BAM in ${OBASE}/*___Realign.bam; do
     CHROM=$(echo $BAM | sed 's/.*chr/chr/' | sed 's/___.*//')
     fgrep -w $CHROM $TARGET_REGION >${OBASE}/${CHROM}__TARGET.bed
-    QRUN 6 \
+    QRUN 1 \
     echo $GATK -T TableRecalibration -l INFO \
     	-R $GENOME_FASTQ \
     	-L ${OBASE}/${CHROM}__TARGET.bed \
@@ -144,7 +126,7 @@ for BAM in ${OBASE}/*___Realign.bam; do
     	-I ${BAM} \
     	-o ${BAM%.bam},Recal.bam
 done
-SYNC
+echo SYNC
 
 # Unified Genotyper
 
@@ -156,7 +138,7 @@ INPUTS=$(ls ${OBASE}/*___Realign,Recal.bam | awk '{print "-I "$1}')
 #
 
 QTAG=qq_14_gUGT_$OBASE
-QRUN 22 \
+QRUN 1 \
 echo $GATK -T UnifiedGenotyper -nt 24 \
     -R $GENOME_FASTQ \
 	-L $TARGET_REGION \
@@ -173,16 +155,16 @@ echo $GATK -T UnifiedGenotyper -nt 24 \
 # Need to merge for annoteVCF.py
 
 BAMS=$(ls ${OBASE}/*Realign,Recal.bam | awk '{print "I="$1}')
-QRUN 6 \
+QRUN 1 \
 echo $PICARD MergeSamFiles MAX_RECORDS_IN_RAM=5000000 CREATE_INDEX=true SO=coordinate O=${OBASE}_Realign,Recal.bam $BAMS
 
-SYNC
+echo SYNC
 
 # Fix .bai for pysam
 echo ln -s ${OBASE}_Realign,Recal.bai ${OBASE}_Realign,Recal.bam.bai
 
 QTAG=qq_15_SPLIT_$OBASE
-QRUN 6 \
+QRUN 1 \
 echo /opt/bin/java7 -Xmx16g -Djava.io.tmpdir=/scratch/socci \
     -jar /opt/common/gatk/GenomeAnalysisTK-2.6-3-gdee51c4/GenomeAnalysisTK.jar \
     -T SplitSamFile -R $GENOME_FASTQ \
@@ -211,18 +193,18 @@ $SDIR/mkMAF.sh ${SBASE}_UGT_SNP_AnnoteQDP.vcf \
     | $SDIR/pA_HAJAVA_FILTER_C.py \
     >${SBASE}_UGT_SNP_FILTER_C___MAF.csv
 
-SYNC
+echo SYNC
 
 
 QTAG=qq_16_INDEX_$OBASE
 for file in ${OBASE}_Realign,Recal____*bam; do
-    QRUN 6 \
+    QRUN 1 \
     echo $PICARD BuildBamIndex I=$file
 done
-SYNC
+echo SYNC
 
 QTAG=qq_17_MUTECT_$OBASE
-QRUN 3 \
+QRUN 1 \
 echo /opt/bin/java6 -Xmx4g -Djava.io.tmpdir=/scratch/socci -jar $SDIR/bin/muTect-1.1.4.jar \
     --analysis_type MuTect \
     --read_filter BadCigar \
@@ -237,7 +219,7 @@ echo /opt/bin/java6 -Xmx4g -Djava.io.tmpdir=/scratch/socci -jar $SDIR/bin/muTect
     -ndf $OBASE/coverageNormal.txt \
     --vcf $OBASE/mutect.vcf \
     --out ${OBASE}__mutect.out
-SYNC
+echo SYNC
 
 
 BEDTOOLS=/home/socci/bin/BED/bedtools

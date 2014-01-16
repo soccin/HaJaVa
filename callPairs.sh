@@ -1,4 +1,7 @@
 #!/bin/bash
+if [ -f ~/.bashrc ] ; then
+        . ~/.bashrc
+fi
 SDIR="$( cd "$( dirname "$0" )" && pwd )"
 
 if [ -z "$HJV_ROOT" ]; then
@@ -206,7 +209,7 @@ T_NRAF_CUT=0.15
 N_NRAF_PCT=$(echo $N_NRAF_CUT | awk '{print $1*100}')
 T_NRAF_PCT=$(echo $T_NRAF_CUT | awk '{print $1*100}')
 
-$SDIR/mkMAF.sh ${SBASE}_UGT_SNP_AnnoteQDP.vcf \
+$SDIR/bin/mkMAF.sh ${SBASE}_UGT_SNP_AnnoteQDP.vcf \
     $SAMPLE_NORMAL $SAMPLE_TUMOR \
     $N_COV_CUT $T_COV_CUT $N_NRAF_CUT $T_NRAF_CUT \
     | $SDIR/pA_HAJAVA_FILTER_C.py \
