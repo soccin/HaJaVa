@@ -11,11 +11,9 @@ if [ -z "$HJV_ROOT" ]; then
 fi
 
 
-SAMPLE_NORMAL=$1
-SAMPLE_TUMOR=$2
 
-#NORMAL=results/$SAMPLE_NORMAL/out/${SAMPLE_NORMAL}___MERGE,MD.bam
-#TUMOR=results/$SAMPLE_TUMOR/out/${SAMPLE_TUMOR}___MERGE,MD.bam
+NORMAL=$1
+TUMOR=$2
 
 if [ ! -f $NORMAL ]; then
 	echo NORMAL BAM DOES NOT EXISTS [$NORMAL]
@@ -26,6 +24,10 @@ if [ ! -f $TUMOR ]; then
 	exit 1
 fi
 
+SAMPLE_NORMAL=$(echo $NORMAL |  perl -ne 'm|_Realign,Recal____(.*).bam|;print $1')
+SAMPLE_TUMOR=$(echo $TUMOR |  perl -ne 'm|_Realign,Recal____(.*).bam|;print $1')
+
+
 echo "------------------------------------------------------------------"
 echo "callPairsMutect"
 echo "NORMAL, TUMOR=" $NORMAL, $TUMOR
@@ -33,7 +35,7 @@ echo SAMPLE_NORMAL=$SAMPLE_NORMAL
 echo SAMPLE_TUMOR=$SAMPLE_TUMOR
 echo
 
-OBASE=${SAMPLE_NORMAL}____${SAMPLE_TUMOR}
+OBASE=mutect_${SAMPLE_NORMAL}____${SAMPLE_TUMOR}
 echo "OBASE=" $OBASE
 mkdir -p $OBASE
 
@@ -62,7 +64,7 @@ QUEUES=lau.q,mad.q,nce.q
 QRUN () {
     ALLOC=$1
     shift
-    RET=$(qsub -q $QUEUES -pe alloc $ALLOC -N $QTAG -v HJV_ROOT=$HJV_ROOT $SDIR/bin/sgeWrap.sh $*)
+    RET=$(qsub -q $QUEUES -l virtual_free=3G -pe alloc $ALLOC -N $QTAG -v HJV_ROOT=$HJV_ROOT $SDIR/bin/sgeWrap.sh $*)
     echo "#QRUN RET=" $RET
 }
 
@@ -72,7 +74,9 @@ SYNC () {
 
 
 #####################################################################################
-SYNC
+
+echo $NORMAL >$OBASE/PAIR
+echo $TUMOR >>$OBASE/PAIR
 
 QTAG=qq_17_MUTECT_$OBASE
 QRUN 3 \
@@ -82,13 +86,9 @@ QRUN 3 \
     --reference_sequence $GENOME_FASTQ \
     --dbsnp $DBSNP_VCF \
     --intervals $TARGET_REGION \
-    --input_file:normal ${OBASE}_Realign,Recal____${SAMPLE_NORMAL}.bam \
-    --input_file:tumor  ${OBASE}_Realign,Recal____${SAMPLE_TUMOR}.bam \
+    --input_file:normal $NORMAL \
+    --input_file:tumor  $TUMOR \
     --coverage_file $OBASE/coverageWig.txt \
-    --enable_extended_output \
-    -tdf $OBASE/coverageTumor.txt \
-    -ndf $OBASE/coverageNormal.txt \
-    --vcf $OBASE/mutect.vcf \
-    --out ${OBASE}__mutect.out
+    --out ${OBASE}/__mutect.out
 
 
