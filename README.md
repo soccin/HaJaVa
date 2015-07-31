@@ -40,7 +40,6 @@ If you do not have them or if you have different version then specified here thi
 You will also need the following python libraries/modules.
 
 * pysam version 0.6
-* PyVCF
 
 ## 1) Create a working directory ##
 
@@ -282,13 +281,8 @@ You should see
 	0.6
 	
 and no errors. If not the library was not installed properly. If you see something about missing c library __ks... then you are probably using the incompatiable compiler (clang on OSX 10.7). 
-		
 
-## 10) PyVCF
-
-Just figure out how to distribute it with package
-
-## 11) Get pipeline scripts from BitBucket
+## 10) Get pipeline scripts from BitBucket
 
 You can retrive the pipeline scripts from the BitBucket repository by cloning it using Mercurial (hg)
 If you do not have hg installed you can get a copy at
@@ -315,7 +309,7 @@ Put the test data tar file here and unpack it. You can delete the tar file after
 	tar xvf http://cbio.mskcc.org/public/SocciN/HaJaVa/PipelineFreeze/testData.tar
 
 
-## 12) Set user paths
+## 11) Set user paths
 
 ### bin/path.sh
 
